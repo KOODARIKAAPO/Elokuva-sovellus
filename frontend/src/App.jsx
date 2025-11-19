@@ -1,5 +1,9 @@
 import { useState } from "react";
 import "./App.css";
+import RegisterForm from "./components/RegisterForm.jsx";
+import LoginForm from "./components/LoginForm.jsx";
+import ApiEndpoints from "./components/ApiEndpoints.jsx";
+import Card from "./components/Card.jsx";
 
 const apiBaseUrl = (import.meta.env.VITE_API_URL || "http://localhost:3001").replace(/\/$/, "");
 
@@ -21,6 +25,7 @@ function App() {
   const [loginStatus, setLoginStatus] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [busyAction, setBusyAction] = useState(null);
+  const [authPanelOpen, setAuthPanelOpen] = useState(false);
 
   const apiDocs = {
     register: `${apiBaseUrl}/auth/register`,
@@ -79,112 +84,65 @@ function App() {
     }
   }
 
+  const isRegisterBusy = busyAction === "register";
+  const isLoginBusy = busyAction === "login";
+  const toggleAuthPanel = () => setAuthPanelOpen((open) => !open);
+
   return (
     <div className="app">
-      <header>
-        <h1>Create user ja login</h1>
-        <p>Rekisteröi uusi käyttäjä ja kirjaudu sisään testataksesi APIa.</p>
+      <header className="app-header">
+        <div className="header-copy">
+          <h1>Elokuvasovelluksen hallintapaneeli</h1>
+          <p>
+            Etusivu tarjoaa yleiskatsauksen sovellukseen ja Autentikointi-osio sisältää
+            kirjautumisen testilomakkeet.
+          </p>
+        </div>
+        <button type="button" className="header-cta" onClick={toggleAuthPanel}>
+          {authPanelOpen ? "Sulje autentikointi" : "Avaa autentikointi"}
+        </button>
       </header>
 
-      <section className="card">
-        <h2>Luo käyttäjä</h2>
-        <form className="form" onSubmit={handleRegister}>
-          <label>
-            Käyttäjänimi
-            <input
-              type="text"
-              name="username"
-              minLength={3}
-              value={registerForm.username}
-              onChange={(e) => setRegisterForm((f) => ({ ...f, username: e.target.value }))}
-              required
-            />
-          </label>
-          <label>
-            Sähköposti
-            <input
-              type="email"
-              name="email"
-              value={registerForm.email}
-              onChange={(e) => setRegisterForm((f) => ({ ...f, email: e.target.value }))}
-              required
-            />
-          </label>
-          <label>
-            Salasana
-            <input
-              type="password"
-              name="password"
-              minLength={8}
-              value={registerForm.password}
-              onChange={(e) => setRegisterForm((f) => ({ ...f, password: e.target.value }))}
-              required
-            />
-          </label>
-          <button type="submit" disabled={busyAction === "register"}>
-            {busyAction === "register" ? "Luodaan..." : "Luo käyttäjä"}
-          </button>
-        </form>
-        {registerStatus && (
-          <p className={`status ${registerStatus.type}`}>{registerStatus.message}</p>
-        )}
-      </section>
+      <main className="view">
+        <Card title="Tervetuloa Elokuvasovellukseen">
+          <p>
+            Tämä näkymä toimii sovelluksen etusivuna. Hallitse sovellusta ja tutki eri toimintoja
+            oikean yläkulman painikkeen kautta avautuvista työkaluista sekä tulevista komponenteista.
+          </p>
+        </Card>
+        <Card title="Ohjeita kehittäjälle">
+          <p>
+            Avaa autentikointi-lomakkeet yläreunan painikkeesta. Voit laajentaa kotinäkymää
+            lisäämällä komponentteja, jotka kuvaavat esimerkiksi nykyisiä elokuvia,
+            käyttöönotto-ohjeita tai muuta projektin kannalta oleellista sisältöä.
+          </p>
+        </Card>
 
-      <section className="card">
-        <h2>Kirjaudu sisään</h2>
-        <p className="hint">Voit käyttää käyttäjänimeä tai sähköpostia.</p>
-        <form className="form" onSubmit={handleLogin}>
-          <label>
-            Käyttäjänimi tai sähköposti
-            <input
-              type="text"
-              name="identifier"
-              value={loginForm.identifier}
-              onChange={(e) => setLoginForm((f) => ({ ...f, identifier: e.target.value }))}
-              required
-            />
-          </label>
-          <label>
-            Salasana
-            <input
-              type="password"
-              name="password"
-              minLength={8}
-              value={loginForm.password}
-              onChange={(e) => setLoginForm((f) => ({ ...f, password: e.target.value }))}
-              required
-            />
-          </label>
-          <button type="submit" disabled={busyAction === "login"}>
-            {busyAction === "login" ? "Kirjaudutaan..." : "Kirjaudu"}
-          </button>
-        </form>
-        {loginStatus && <p className={`status ${loginStatus.type}`}>{loginStatus.message}</p>}
-        {currentUser && (
-          <div className="current-user">
-            <p>
-              <strong>Kirjautunut käyttäjä:</strong>
-            </p>
-            <ul>
-              <li>id: {currentUser.id}</li>
-              <li>käyttäjänimi: {currentUser.username}</li>
-              <li>sähköposti: {currentUser.email}</li>
-            </ul>
-          </div>
+        {authPanelOpen && (
+          <section className="auth-panel">
+            <div className="forms-grid">
+              <RegisterForm
+                formData={registerForm}
+                disabled={isRegisterBusy}
+                status={registerStatus}
+                onChange={(field, value) =>
+                  setRegisterForm((form) => ({ ...form, [field]: value }))
+                }
+                onSubmit={handleRegister}
+              />
+              <LoginForm
+                formData={loginForm}
+                disabled={isLoginBusy}
+                status={loginStatus}
+                currentUser={currentUser}
+                onChange={(field, value) => setLoginForm((form) => ({ ...form, [field]: value }))}
+                onSubmit={handleLogin}
+              />
+            </div>
+            <ApiEndpoints endpoints={apiDocs} />
+          </section>
         )}
-      </section>
-
-      <section className="card endpoints">
-        <h3>Käytettävät API-päätepisteet</h3>
-        <ul>
-          <li>
-            <code>POST {apiDocs.register}</code>
-          </li>
-          <li>
-            <code>POST {apiDocs.login}</code>
-          </li>
-        </ul>
-      </section>
+      </main>
     </div>
   );
 }
