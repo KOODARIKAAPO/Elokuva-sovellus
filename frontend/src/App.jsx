@@ -5,6 +5,7 @@ import LoginForm from "./components/LoginForm.jsx";
 import ApiEndpoints from "./components/ApiEndpoints.jsx";
 import Card from "./components/Card.jsx";
 import MovieCarousel from "./components/MovieCarousel.jsx";
+import MovieSearch from "./components/MovieSearch";
 
 
 const apiBaseUrl = (import.meta.env.VITE_API_URL || "http://localhost:3001").replace(/\/$/, "");
@@ -107,6 +108,9 @@ function App() {
 
       <main className="view">
         <MovieCarousel />
+
+        <h1>Elokuvahaku</h1>
+        <MovieSearch />
         <Card title="Tervetuloa Elokuvasovellukseen">
           <p>
             Tämä näkymä toimii sovelluksen etusivuna. Hallitse sovellusta ja tutki eri toimintoja
