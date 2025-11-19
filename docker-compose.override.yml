@@ -11,7 +11,7 @@ services:
       - /usr/src/app/node_modules
     environment:
       - PORT=${FRONTEND_PORT}
-    command: npm start           
+    command: npm run dev -- --host 0.0.0.0 --port ${FRONTEND_PORT}
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
 
