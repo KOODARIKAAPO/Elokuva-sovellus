@@ -7,4 +7,4 @@ RUN npm install
 
 COPY . .
 
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npm run dev -- --host 0.0.0.0 --port ${FRONTEND_PORT:-3000}"]

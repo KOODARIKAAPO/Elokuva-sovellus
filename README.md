@@ -48,6 +48,14 @@ Jolloin suoritetaan vain docker-compose.yml
   <li>Jos teet muutoksia Dockerfile tai package.json tiedostoihin, sinun tulee käynnistää kontit uudelleen.</li>
 </ul>
 
+<h2>Frontend (Vite + React)</h2>
+<p>Vite-käyttöinen React-sovellus löytyy kansiosta <code>frontend</code>. Se boottaa lomakepohjaisen käyttöliittymän, jolla voi kutsua uuden <code>/auth/register</code>- ja <code>/auth/login</code>-rajapinnan.</p>
+<ol>
+  <li>Asenna riippuvuudet komennolla <code>npm install</code> kansion <code>frontend</code> sisällä.</li>
+  <li>Dev-palvelin käynnistyy komennolla <code>npm run dev</code>. Docker-kontissa komento ajetaan automaattisesti ja portti luetaan <code>.env</code>-juuritiedoston muuttujasta <code>FRONTEND_PORT</code>.</li>
+  <li>API-osoite asetetaan tiedostoon <code>frontend/.env</code> muuttujalla <code>VITE_API_URL</code>. Oletus on <code>http://localhost:3001</code>.</li>
+</ol>
+
 <h2>Tietokanta</h2>
 <p>
 Kaikki .sql ja .sh tiedostot, jotka on mountattu hakemistoon /docker-entrypoint-initdb.d/, ajetaan vain kerran konttia alustettaessa – eli silloin kun Postgres käynnistyy ensimmäistä kertaa ja data-hakemisto (/var/lib/postgresql/data) on tyhjä.
@@ -139,10 +147,10 @@ docker build -t myusername/docker_example-frontend:latest frontend/
 docker push myusername/docker_example-frontend:latest
 </pre>
 </li>
-<li>Renderissä:
+  <li>Renderissä:
 <ul>
   <li>luo uusi WebService ja valitse Existing image ja kirjoita Image URL (=myusername/docker_example-frontend)</li>
-  <li>Lisää Environment Variablesiin REACT_APP_API_URL ja kopioi siihen backendisi URL (katso ettei loppuun tule kauttaviivaa)</li>
+  <li>Lisää Environment Variablesiin VITE_API_URL ja kopioi siihen backendisi URL (katso ettei loppuun tule kauttaviivaa)</li>
 </ul>
  </li>
 </ol>
