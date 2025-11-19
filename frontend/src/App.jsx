@@ -5,6 +5,8 @@ import LoginForm from "./components/LoginForm.jsx";
 import ApiEndpoints from "./components/ApiEndpoints.jsx";
 import Card from "./components/Card.jsx";
 import MovieCarousel from "./components/MovieCarousel.jsx";
+import SearchBar from "./components/SearchBar.jsx";
+import MovieDetails from "./components/MovieDetails.jsx";
 
 
 const apiBaseUrl = (import.meta.env.VITE_API_URL || "http://localhost:3001").replace(/\/$/, "");
@@ -28,6 +30,10 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [busyAction, setBusyAction] = useState(null);
   const [authPanelOpen, setAuthPanelOpen] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedMovie, setSelectedMovie] = useState(null);
 
   const apiDocs = {
     register: `${apiBaseUrl}/auth/register`,
@@ -90,6 +96,26 @@ function App() {
   const isLoginBusy = busyAction === "login";
   const toggleAuthPanel = () => setAuthPanelOpen((open) => !open);
 
+  async function handleSearch(query) {
+  setSearchQuery(query);
+
+  const apiKey = import.meta.env.VITE_TMDB_API_KEY;
+  const baseUrl = import.meta.env.VITE_TMDB_BASE_URL;
+
+  try {
+    const response = await fetch(
+      `${baseUrl}/search/movie?api_key=${apiKey}&query=${encodeURIComponent(query)}`
+    );
+    if (!response.ok) throw new Error("Haku epäonnistui TMDb:stä");
+    const data = await response.json();
+    setSearchResults(data.results || []);
+  } catch (error) {
+    console.error(error);
+    setSearchResults([]);
+  }
+}
+
+
   return (
     <div className="app">
       <header className="app-header">
@@ -106,7 +132,41 @@ function App() {
       </header>
 
       <main className="view">
+        
         <MovieCarousel />
+        
+        
+        <SearchBar
+        query={searchQuery}
+        onQueryChange={setSearchQuery}
+        onSearch={handleSearch}
+        onSelectMovie={setSelectedMovie}
+        />
+
+
+        {searchResults.length > 0 && (
+          <div className="search-results">
+            {searchResults.map((movie) => (
+              <div
+                key={movie.id}
+                className="search-result-item"
+                onClick={() => setSelectedMovie(movie)}
+              >
+                {movie.title} ({movie.release_date?.slice(0, 4)})
+              </div>
+            ))}
+          </div>
+        )}
+
+
+        {selectedMovie && (
+          <MovieDetails
+            movie={selectedMovie}
+            onClose={() => setSelectedMovie(null)}
+          />
+        )}
+
+
         <Card title="Tervetuloa Elokuvasovellukseen">
           <p>
             Tämä näkymä toimii sovelluksen etusivuna. Hallitse sovellusta ja tutki eri toimintoja
