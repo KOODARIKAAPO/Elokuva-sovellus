@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 import RegisterForm from "./components/RegisterForm.jsx";
 import LoginForm from "./components/LoginForm.jsx";
@@ -7,9 +8,13 @@ import Card from "./components/Card.jsx";
 import MovieCarousel from "./components/MovieCarousel.jsx";
 import SearchBar from "./components/SearchBar.jsx";
 import MovieDetails from "./components/MovieDetails.jsx";
-import DropdownMenu from "./components/DropdownMenu.jsx";
-import JGroup from "./jGroup.jsx";
-import NGroup from "./nGroup.jsx";
+import JGroup from "./pages/JGroup.jsx";
+import NGroup from "./pages/nGroup.jsx";
+import {Layout} from "./Layout.jsx";
+import { Home } from "./pages/Home.jsx";
+import { UserPage } from "./pages/UserPage.jsx";
+import { SignIn } from "./pages/SignIn.jsx";
+import { LogIn } from "./pages/LogIn.jsx";
 
 
 const apiBaseUrl = (import.meta.env.VITE_API_URL || "http://localhost:3001").replace(/\/$/, "");
@@ -137,9 +142,10 @@ function App() {
   }
 
   return (
+    
     <div className="app">
+    <Router>
       <header className="app-header">
-        <DropdownMenu onNavigate={setCurrentPage} />
         <div className="header-copy">
           <h1>Elokuvasovelluksen hallintapaneeli</h1>
           <p>
@@ -230,6 +236,17 @@ function App() {
           </section>
         )}
       </main>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/jgroup" element={<JGroup />} />
+            <Route path="/ngroup" element={<NGroup />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/user" element={<UserPage />} />
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/login" element={<LogIn />} />
+          </Route>
+        </Routes>
+      </Router>
     </div>
   );
 }
