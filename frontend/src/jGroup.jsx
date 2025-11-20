@@ -1,0 +1,55 @@
+import Card from "./components/Card.jsx";
+import { useState } from "react";
+
+function JGroup({ onBack, onNavigate }) {
+  const [groups, setGroups] = useState([]);
+  const [groupName, setGroupName] = useState("");
+
+  const handleAddGroup = () => {
+    if (groupName.trim()) {
+      setGroups([...groups, { id: Date.now(), name: groupName }]);
+      setGroupName("");
+    }
+  };
+
+
+  return (
+    <div className="jgroup-container">
+      <div style={{ marginBottom: 12, display: "flex", gap: "0.5rem" }}>
+        {onBack && (
+          <button type="button" onClick={onBack}>← Back</button>
+        )}
+        <button type="button" onClick={() => (onNavigate ? onNavigate('ngroup') : handleAddGroup())}>New Group</button>
+      </div>
+     
+
+      <Card title="Groups">
+        <div className="group-form">
+          <input
+            type="text"
+            placeholder="Group Name"
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleAddGroup()}
+          />
+          <button onClick={handleAddGroup}>Create</button>
+        </div>
+
+        {groups.length === 0 ? (
+          <p>No groups yet. Create one to get started!</p>
+        ) : (
+          <div className="groups-list">
+            {groups.map((group) => (
+              <div key={group.id} className="group-item">
+                <span>{group.name}</span>
+              </div>
+            ))}
+      
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+export default JGroup;
