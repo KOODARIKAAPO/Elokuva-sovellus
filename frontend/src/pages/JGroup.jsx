@@ -1,5 +1,6 @@
-import Card from "./components/Card.jsx";
+import Card from "../components/Card.jsx";
 import { useState } from "react";
+//import "./jGroup.css";
 
 function JGroup({ onBack, onNavigate }) {
   const [groups, setGroups] = useState([]);
@@ -21,7 +22,14 @@ function JGroup({ onBack, onNavigate }) {
         )}
         <button type="button" onClick={() => (onNavigate ? onNavigate('ngroup') : handleAddGroup())}>New Group</button>
       </div>
-     
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+
+    <form className="example" action="/">
+    <input type="text" placeholder="Search.." name="search" />
+    <button type="submit"><i className="fa fa-search"></i></button>
+    </form>
+
 
       <Card title="Groups">
         <div className="group-form">
@@ -44,10 +52,11 @@ function JGroup({ onBack, onNavigate }) {
                 <span>{group.name}</span>
               </div>
             ))}
-      
+
           </div>
         )}
       </Card>
+
     </div>
   );
 }
