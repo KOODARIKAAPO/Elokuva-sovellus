@@ -7,6 +7,9 @@ import Card from "./components/Card.jsx";
 import MovieCarousel from "./components/MovieCarousel.jsx";
 import SearchBar from "./components/SearchBar.jsx";
 import MovieDetails from "./components/MovieDetails.jsx";
+import DropdownMenu from "./components/DropdownMenu.jsx";
+import JGroup from "./jGroup.jsx";
+import NGroup from "./nGroup.jsx";
 
 
 const apiBaseUrl = (import.meta.env.VITE_API_URL || "http://localhost:3001").replace(/\/$/, "");
@@ -34,6 +37,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [currentPage, setCurrentPage] = useState("home");
 
   const apiDocs = {
     register: `${apiBaseUrl}/auth/register`,
@@ -116,9 +120,26 @@ function App() {
 }
 
 
+  if (currentPage === "jgroup") {
+    return (
+      <div className="app">
+        <JGroup onBack={() => setCurrentPage("home")} onNavigate={setCurrentPage} />
+      </div>
+    );
+  }
+
+  if (currentPage === "ngroup") {
+    return (
+      <div className="app">
+        <NGroup onBack={() => setCurrentPage("jgroup")} />
+      </div>
+    );
+  }
+
   return (
     <div className="app">
       <header className="app-header">
+        <DropdownMenu onNavigate={setCurrentPage} />
         <div className="header-copy">
           <h1>Elokuvasovelluksen hallintapaneeli</h1>
           <p>
@@ -126,9 +147,12 @@ function App() {
             kirjautumisen testilomakkeet.
           </p>
         </div>
-        <button type="button" className="header-cta" onClick={toggleAuthPanel}>
-          {authPanelOpen ? "Sulje autentikointi" : "Avaa autentikointi"}
-        </button>
+
+        <div className="header-buttons">
+          <button type="button" className="header-cta" onClick={toggleAuthPanel}>
+            {authPanelOpen ? "Sulje autentikointi" : "Avaa autentikointi"}
+          </button>
+        </div>
       </header>
 
       <main className="view">
