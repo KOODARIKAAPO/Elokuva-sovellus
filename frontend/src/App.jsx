@@ -1,11 +1,20 @@
 import { useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 import RegisterForm from "./components/RegisterForm.jsx";
 import LoginForm from "./components/LoginForm.jsx";
 import ApiEndpoints from "./components/ApiEndpoints.jsx";
 import Card from "./components/Card.jsx";
 import MovieCarousel from "./components/MovieCarousel.jsx";
-import MovieSearch from "./components/MovieSearch";
+import SearchBar from "./components/SearchBar.jsx";
+import MovieDetails from "./components/MovieDetails.jsx";
+import JGroup from "./pages/JGroup.jsx";
+import NGroup from "./pages/nGroup.jsx";
+import { Layout } from "./Layout.jsx";
+import { Home } from "./pages/Home.jsx";
+import { UserPage } from "./pages/UserPage.jsx";
+import { SignIn } from "./pages/SignIn.jsx";
+import { LogIn } from "./pages/LogIn.jsx";
 
 
 const apiBaseUrl = (import.meta.env.VITE_API_URL || "http://localhost:3001").replace(/\/$/, "");
@@ -29,6 +38,11 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [busyAction, setBusyAction] = useState(null);
   const [authPanelOpen, setAuthPanelOpen] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [currentPage, setCurrentPage] = useState("home");
 
   const apiDocs = {
     register: `${apiBaseUrl}/auth/register`,
@@ -91,8 +105,46 @@ function App() {
   const isLoginBusy = busyAction === "login";
   const toggleAuthPanel = () => setAuthPanelOpen((open) => !open);
 
+  async function handleSearch(query) {
+  setSearchQuery(query);
+
+  const apiKey = import.meta.env.VITE_TMDB_API_KEY;
+  const baseUrl = import.meta.env.VITE_TMDB_BASE_URL;
+
+  try {
+    const response = await fetch(
+      `${baseUrl}/search/movie?api_key=${apiKey}&query=${encodeURIComponent(query)}`
+    );
+    if (!response.ok) throw new Error("Haku epäonnistui TMDb:stä");
+    const data = await response.json();
+    setSearchResults(data.results || []);
+  } catch (error) {
+    console.error(error);
+    setSearchResults([]);
+  }
+}
+
+
+  if (currentPage === "jgroup") {
+    return (
+      <div className="app">
+        <JGroup onBack={() => setCurrentPage("home")} onNavigate={setCurrentPage} />
+      </div>
+    );
+  }
+
+  if (currentPage === "ngroup") {
+    return (
+      <div className="app">
+        <NGroup onBack={() => setCurrentPage("jgroup")} />
+      </div>
+    );
+  }
+
   return (
+    
     <div className="app">
+    <Router>
       <header className="app-header">
         <div className="header-copy">
           <h1>Elokuvasovelluksen hallintapaneeli</h1>
@@ -101,16 +153,42 @@ function App() {
             kirjautumisen testilomakkeet.
           </p>
         </div>
-        <button type="button" className="header-cta" onClick={toggleAuthPanel}>
-          {authPanelOpen ? "Sulje autentikointi" : "Avaa autentikointi"}
-        </button>
+
+        <div className="header-buttons">
+          <button type="button" className="header-cta" onClick={toggleAuthPanel}>
+            {authPanelOpen ? "Sulje autentikointi" : "Avaa autentikointi"}
+          </button>
+        </div>
       </header>
 
       <main className="view">
+        
         <MovieCarousel />
 
-        <h1>Elokuvahaku</h1>
-        <MovieSearch />
+        <SearchBar
+          query={searchQuery}
+          onQueryChange={setSearchQuery}
+          onSearch={handleSearch}
+          onSelectMovie={setSelectedMovie}
+        />
+
+        {searchResults.length > 0 && (
+          <div className="search-results">
+            {searchResults.map((movie) => (
+              <div
+                key={movie.id}
+                className="search-result-item"
+                onClick={() => setSelectedMovie(movie)}
+              >
+                {movie.title} ({movie.release_date?.slice(0, 4)})
+              </div>
+            ))}
+          </div>
+        )}
+
+        {selectedMovie && (
+          <MovieDetails movie={selectedMovie} onClose={() => setSelectedMovie(null)} />
+        )}
         <Card title="Tervetuloa Elokuvasovellukseen">
           <p>
             Tämä näkymä toimii sovelluksen etusivuna. Hallitse sovellusta ja tutki eri toimintoja
@@ -150,6 +228,17 @@ function App() {
           </section>
         )}
       </main>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/jgroup" element={<JGroup />} />
+            <Route path="/ngroup" element={<NGroup />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/user" element={<UserPage />} />
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/login" element={<LogIn />} />
+          </Route>
+        </Routes>
+      </Router>
     </div>
   );
 }

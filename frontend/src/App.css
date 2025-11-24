@@ -145,3 +145,13 @@ button:disabled {
   flex-direction: column;
   gap: 1.5rem;
 }
+
+.dropdown-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+ flex-direction: column;
+ 
+}
