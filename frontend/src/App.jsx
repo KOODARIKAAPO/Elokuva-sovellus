@@ -10,7 +10,7 @@ import SearchBar from "./components/SearchBar.jsx";
 import MovieDetails from "./components/MovieDetails.jsx";
 import JGroup from "./pages/JGroup.jsx";
 import NGroup from "./pages/nGroup.jsx";
-import {Layout} from "./Layout.jsx";
+import { Layout } from "./Layout.jsx";
 import { Home } from "./pages/Home.jsx";
 import { UserPage } from "./pages/UserPage.jsx";
 import { SignIn } from "./pages/SignIn.jsx";
@@ -164,15 +164,13 @@ function App() {
       <main className="view">
         
         <MovieCarousel />
-        
-        
-        <SearchBar
-        query={searchQuery}
-        onQueryChange={setSearchQuery}
-        onSearch={handleSearch}
-        onSelectMovie={setSelectedMovie}
-        />
 
+        <SearchBar
+          query={searchQuery}
+          onQueryChange={setSearchQuery}
+          onSearch={handleSearch}
+          onSelectMovie={setSelectedMovie}
+        />
 
         {searchResults.length > 0 && (
           <div className="search-results">
@@ -188,15 +186,9 @@ function App() {
           </div>
         )}
 
-
         {selectedMovie && (
-          <MovieDetails
-            movie={selectedMovie}
-            onClose={() => setSelectedMovie(null)}
-          />
+          <MovieDetails movie={selectedMovie} onClose={() => setSelectedMovie(null)} />
         )}
-
-
         <Card title="Tervetuloa Elokuvasovellukseen">
           <p>
             Tämä näkymä toimii sovelluksen etusivuna. Hallitse sovellusta ja tutki eri toimintoja
