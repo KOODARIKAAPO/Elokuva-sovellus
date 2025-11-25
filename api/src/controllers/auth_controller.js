@@ -6,9 +6,22 @@ import {
   toPublicAccount,
 } from "../models/account_model.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
+import jwt from 'jsonwebtoken';
 
 const MIN_PASSWORD_LENGTH = 8;
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
+//Functio joka luo JWT tokenin
+function createToken(account) {
+  const payload = {
+    id: account.id,
+    username: account.username,
+    email: account.email,
+  };
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+}
+//Rekisteröitymisen käsittelijä
 export async function register(req, res, next) {
   try {
     const username = typeof req.body.username === "string" ? req.body.username.trim() : "";
@@ -54,7 +67,7 @@ export async function register(req, res, next) {
     return next(err);
   }
 }
-
+//Kirjautumisen käsittelijä
 export async function login(req, res, next) {
   try {
     const username = typeof req.body.username === "string" ? req.body.username.trim() : "";
@@ -84,7 +97,10 @@ export async function login(req, res, next) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    return res.json({ message: "Login successful", user: toPublicAccount(account) });
+    const user = toPublicAccount(account);
+    const token = createToken(user);
+
+    return res.json({ message: "Login successful", user, token });
   } catch (err) {
     return next(err);
   }
