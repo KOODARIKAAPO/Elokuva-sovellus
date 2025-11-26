@@ -9,7 +9,7 @@ console.log("TMDB KEY →", API_KEY);
 
 const IMG_BASE = "https://image.tmdb.org/t/p/w500";
 
-function MovieCarousel() {
+function MovieCarousel({ onSelectMovie }) {
   const [movies, setMovies] = useState([]);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ function MovieCarousel() {
     }
 
     fetch(
-      `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=en-US&page=1`
+      `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=fi-FI&page=1`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -44,7 +44,8 @@ function MovieCarousel() {
             <img
               src={IMG_BASE + movie.poster_path}
               alt={movie.title}
-              style={{ width: "100%", borderRadius: "8px" }}
+              style={{ width: "100%", borderRadius: "8px", cursor: onSelectMovie ? "pointer" : "default" }}
+              onClick={() => typeof onSelectMovie === "function" && onSelectMovie(movie)}
             />
             <p style={{ textAlign: "center", marginTop: "8px", fontSize: "14px" }}>
               {movie.title}
