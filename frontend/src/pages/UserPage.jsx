@@ -1,5 +1,3 @@
-
-
 // src/pages/UserPage.jsx
 import { useAuth } from "../AuthContext.jsx";
 import { useEffect, useState } from "react";
@@ -10,11 +8,13 @@ export function UserPage() {
   const [favouriteMovies, setFavouriteMovies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [userReviews, setUserReviews] = useState([]);
 
   const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3001";
   const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
   const TMDB_BASE_URL = import.meta.env.VITE_TMDB_BASE_URL || "https://api.themoviedb.org/3";
 
+  // Hae suosikit
   useEffect(() => {
     if (!token) return;
 
@@ -40,6 +40,25 @@ export function UserPage() {
     loadFavs();
   }, [token]);
 
+  // Hae käyttäjän arvostelut
+  useEffect(() => {
+    if (!token) return;
+
+    async function loadReviews() {
+      try {
+        const res = await fetch(`${API_BASE}/reviews/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setUserReviews(data || []);
+      } catch (err) {
+        console.error("Arvosteluiden haku epäonnistui", err);
+      }
+    }
+
+    loadReviews();
+  }, [token]);
+
   // Hae TMDb-tiedot jokaiselle suosikille (julisteet ym.)
   useEffect(() => {
     async function loadMovieDetails() {
@@ -61,9 +80,11 @@ export function UserPage() {
               );
               if (!res.ok) throw new Error("TMDb haku epäonnistui");
               const data = await res.json();
-              return { tmdbId: fav.tmdb_id, data };
+              // Liitetään käyttäjän arvostelu jos löytyy
+              const review = userReviews.find(r => r.tmdb_id === fav.tmdb_id);
+              return { tmdbId: fav.tmdb_id, data, review };
             } catch {
-              return { tmdbId: fav.tmdb_id, data: null };
+              return { tmdbId: fav.tmdb_id, data: null, review: null };
             }
           })
         );
@@ -74,7 +95,7 @@ export function UserPage() {
     }
 
     loadMovieDetails();
-  }, [favourites, TMDB_API_KEY, TMDB_BASE_URL]);
+  }, [favourites, userReviews, TMDB_API_KEY, TMDB_BASE_URL]);
 
   if (!currentUser)
     return <p>Kirjaudu sisään nähdäksesi profiilin.</p>;
@@ -89,7 +110,7 @@ export function UserPage() {
       {!loading && favourites.length === 0 && <p>Ei suosikkeja vielä.</p>}
 
       <div className="favourite-grid">
-        {favouriteMovies.map(({ tmdbId, data }) => (
+        {favouriteMovies.map(({ tmdbId, data, review }) => (
           <div key={tmdbId} className="favourite-card">
             {data?.poster_path ? (
               <img
@@ -102,10 +123,50 @@ export function UserPage() {
             <div className="favourite-meta">
               <h3>{data?.title || `TMDb ID: ${tmdbId}`}</h3>
               {data?.release_date && <p>{data.release_date.slice(0, 4)}</p>}
+
+              {review ? (
+                <div className="user-review">
+                  <p>Tähdet: {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</p>
+                  {review.review_text && <p>{review.review_text}</p>}
+                </div>
+              ) : (
+                <p>Et ole arvostellut tätä elokuvaa</p>
+              )}
             </div>
           </div>
         ))}
       </div>
+
+      <h2>Omat arvostelusi</h2>
+
+      {userReviews.length === 0 ? (
+        <p>Et ole vielä tehnyt arvosteluja.</p>
+      ) : (
+        <div className="review-grid">
+          {userReviews.map((review) => {
+            const movieData = favouriteMovies.find(m => m.tmdbId === review.tmdb_id)?.data;
+            return (
+              <div key={review.id} className="review-card">
+                {movieData?.poster_path ? (
+                  <img
+                    src={`https://image.tmdb.org/t/p/w185${movieData.poster_path}`}
+                    alt={movieData.title}
+                  />
+                ) : (
+                  <div className="poster-placeholder">Ei julistetta</div>
+                )}
+                <div className="review-meta">
+                  <h3>{movieData?.title || `TMDb ID: ${review.tmdb_id}`}</h3>
+                  <p>Tähdet: {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</p>
+                  {review.review_text && <p>{review.review_text}</p>}
+                  <p className="review-date">Arvostelu tehty: {new Date(review.created_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
     </div>
   );
 }

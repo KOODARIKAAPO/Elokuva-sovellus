@@ -5,6 +5,8 @@ import debugRouter from "./routers/debug_router.js";
 import bookRouter from "./routers/book_router.js";
 import authRouter from "./routers/auth_router.js";
 import favouriteRouter from "./routers/favourite_router.js";
+import reviewRouter from "./routers/review_router.js";
+
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -21,6 +23,7 @@ app.use(debugRouter);
 app.use("/book", bookRouter);
 app.use("/auth", authRouter);
 app.use("/favourites", favouriteRouter);
+app.use("/reviews", reviewRouter);
 
 app.listen(port, () => {
   console.log(`Server is listening port ${port}`);

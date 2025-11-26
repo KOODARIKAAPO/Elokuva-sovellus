@@ -9,6 +9,10 @@ import { LogIn } from "./pages/LogIn.jsx";
 import JGroup from "./pages/JGroup.jsx";
 import NGroup from "./pages/nGroup.jsx";
 import { AuthProvider } from "./AuthContext.jsx";
+import ReviewPage from "./pages/ReviewPage.jsx";
+
+
+
 
 function App() {
   return (
@@ -23,6 +27,7 @@ function App() {
               <Route path="/login" element={<LogIn />} />
               <Route path="/jgroup" element={<JGroup />} />
               <Route path="/ngroup" element={<NGroup />} />
+              <Route path="/reviews" element={<ReviewPage />} />
             </Route>
           </Routes>
         </Router>
