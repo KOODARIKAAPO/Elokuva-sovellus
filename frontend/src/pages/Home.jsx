@@ -42,7 +42,7 @@ export function Home() {
       </header>
 
       <section className="view">
-        <MovieCarousel />
+        <MovieCarousel onSelectMovie={setSelectedMovie} />
 
         <SearchBar
           query={searchQuery}
