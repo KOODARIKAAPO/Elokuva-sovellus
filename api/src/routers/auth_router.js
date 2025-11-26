@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { login, register } from "../controllers/auth_controller.js";
+import { deleteMe, getMe, login, register, updatePassword, updateProfile } from "../controllers/auth_controller.js";
 import { authRequired } from "../middleware/auth_middleware.js";
 
 const authRouter = Router();
@@ -11,9 +11,15 @@ authRouter.post("/register", register);
 authRouter.post("/login", login);
 
 // Tokenin tarkistus + kirjautuneen käyttäjän tiedot
-authRouter.get("/me", authRequired, (req, res) => {
-  // req.user tulee JWT-tokenista
-  return res.json({ user: req.user });
-});
+authRouter.get("/me", authRequired, getMe);
+
+// Profiilin päivitys (username/email)
+authRouter.patch("/me", authRequired, updateProfile);
+
+// Salasanan vaihto
+authRouter.patch("/me/password", authRequired, updatePassword);
+
+// Tilin poisto
+authRouter.delete("/me", authRequired, deleteMe);
 
 export default authRouter;
