@@ -21,13 +21,13 @@ export function Navbar() {
         Menu ▼
       </button>
      {open && (
+      /* Lisää tänne linkki, jos haluat sivun näkyvän dropdown-valikossa. Lisää route myös App.jsx -tiedostoon. */
         <div className="dropdown-content">
           <Link to="/">Home</Link><br/>
-          <Link to="/jgroup">Join Group</Link><br/>
-          <Link to="/ngroup">New Group</Link><br/>
+          <Link to="/jgroup">Groups</Link><br/>
           <Link to="/user">User</Link><br/>
           <Link to="/reviews">Arvostelut</Link><br/>
-          <Link to="/signin">Sign In</Link><br/>
+          <Link to="/signin">Sign Up</Link><br/>
           <Link to="/login">Log In</Link><br/>
           {currentUser && (
             <>

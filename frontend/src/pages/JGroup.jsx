@@ -1,62 +1,92 @@
 import Card from "../components/Card.jsx";
-import { useState } from "react";
-//import "./jGroup.css";
+import { useState, useEffect } from "react";
+import { useAuth } from "../AuthContext.jsx";
+import { useNavigate } from "react-router-dom";
 
 function JGroup({ onBack, onNavigate }) {
+  const { currentUser } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const apiBaseUrl = (import.meta.env.VITE_API_URL || "http://localhost:3001").replace(/\/$/, "");
+  const navigate = useNavigate();
   const [groups, setGroups] = useState([]);
   const [groupName, setGroupName] = useState("");
+  const [searchText, setSearchText] = useState("");
+  const [filteredGroups, setFilteredGroups] = useState([]);
 
-  const handleAddGroup = () => {
-    if (groupName.trim()) {
-      setGroups([...groups, { id: Date.now(), name: groupName }]);
-      setGroupName("");
+  const handleSearch = () => {
+  const filtered = groups.filter(group =>
+    group.name.toLowerCase().includes(searchText.toLowerCase())
+  );
+  setFilteredGroups(filtered);
+};
+
+const groupsToShow = filteredGroups.length > 0 ? filteredGroups : groups;
+
+  async function fetchGroups() {
+    setLoading(true);
+    try {
+      const res = await fetch(`${apiBaseUrl}/groups`);
+      if (!res.ok) throw new Error("Failed to load groups");
+      const data = await res.json();
+      setGroups(data || []);
+    } catch (err) {
+      console.error("fetch groups error", err);
+    } finally {
+      setLoading(false);
     }
-  };
+  }
 
+  useEffect(() => {
+    fetchGroups();
+  }, []);
 
   return (
     <div className="jgroup-container">
       <div style={{ marginBottom: 12, display: "flex", gap: "0.5rem" }}>
-        {onBack && (
-          <button type="button" onClick={onBack}>← Back</button>
-        )}
-        <button type="button" onClick={() => (onNavigate ? onNavigate('ngroup') : handleAddGroup())}>New Group</button>
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof onBack === "function") return onBack();
+            if (window.history.length > 1) return navigate(-1);
+            return navigate("/");
+          }}
+        >
+          ← Back
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            if (onNavigate) return onNavigate("ngroup");
+            return navigate("/ngroup");
+          }}
+        >
+          New Group
+        </button>
       </div>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
-
-    <form className="example" action="/">
-    <input type="text" placeholder="Search.." name="search" />
-    <button type="submit"><i className="fa fa-search"></i></button>
-    </form>
-
-
       <Card title="Groups">
-        <div className="group-form">
-          <input
-            type="text"
-            placeholder="Group Name"
-            value={groupName}
-            onChange={(e) => setGroupName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleAddGroup()}
-          />
-          <button onClick={handleAddGroup}>Create</button>
+  <div className="group-form">
+    <input
+      type="text"
+      placeholder="Search groups..."
+      value={searchText}
+      onChange={(e) => setSearchText(e.target.value)}
+    />
+    <button onClick={handleSearch}>Search</button>
+  </div>
+
+  {(filteredGroups.length > 0 ? filteredGroups : groups).length === 0 ? (
+    <p>No groups found.</p>
+  ) : (
+    <div className="groups-list">
+      {(filteredGroups.length > 0 ? filteredGroups : groups).map((group) => (
+        <div key={group.id} className="group-item">
+          <span>{group.name}</span>
         </div>
-
-        {groups.length === 0 ? (
-          <p>No groups yet. Create one to get started!</p>
-        ) : (
-          <div className="groups-list">
-            {groups.map((group) => (
-              <div key={group.id} className="group-item">
-                <span>{group.name}</span>
-              </div>
-            ))}
-
-          </div>
-        )}
-      </Card>
-
+      ))}
+    </div>
+  )}
+</Card>
     </div>
   );
 }
