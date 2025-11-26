@@ -29,6 +29,7 @@ export function Navbar() {
           <Link to="/reviews">Arvostelut</Link><br/>
           <Link to="/signin">Sign Up</Link><br/>
           <Link to="/login">Log In</Link><br/>
+          <Link to="/singlegroup">Single Group</Link><br/>
           {currentUser && (
             <>
               <button className="menu-button" onClick={handleLogout}>Log Out</button><br/>
