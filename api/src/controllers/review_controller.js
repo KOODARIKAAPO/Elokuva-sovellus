@@ -1,4 +1,3 @@
-// api/src/controllers/review_controller.js
 import ReviewModel from '../models/review_model.js';
 
 export const ReviewController = {
@@ -39,6 +38,22 @@ export const ReviewController = {
     }
   },
 
+  // Hae kaikki arvostelut tietylle elokuvalle
+  getReviewsByTmdbId: async (req, res) => {
+    try {
+      const { tmdb_id } = req.query;
+      if (!tmdb_id) {
+        return res.status(400).json({ message: 'tmdb_id on pakollinen' });
+      }
+
+      const reviews = await ReviewModel.getReviewsByTmdbId(tmdb_id);
+      res.status(200).json(reviews);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Arvosteluiden haku epäonnistui' });
+    }
+  },
+
   // Päivitä arvostelu
   updateReview: async (req, res) => {
     try {
@@ -56,7 +71,7 @@ export const ReviewController = {
         return res.status(403).json({ message: 'Et voi muokata toisen käyttäjän arvostelua' });
       }
 
-      const updated = await ReviewModel.updateReview(id, rating, review_text || '');
+      const updated = await ReviewModel.updateReview(id, review_text ? review_text : '', rating);
       res.status(200).json(updated);
     } catch (err) {
       console.error(err);

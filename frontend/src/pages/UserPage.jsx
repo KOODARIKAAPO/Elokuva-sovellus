@@ -27,7 +27,7 @@ export function UserPage() {
   const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
   const TMDB_BASE_URL = import.meta.env.VITE_TMDB_BASE_URL || "https://api.themoviedb.org/3";
 
-  // Hae suosikit
+  // Alusta profiili
   useEffect(() => {
     if (currentUser) {
       setProfileForm({
@@ -37,6 +37,7 @@ export function UserPage() {
     }
   }, [currentUser]);
 
+  // Hae suosikit
   useEffect(() => {
     if (!token) return;
 
@@ -48,9 +49,7 @@ export function UserPage() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-
         if (!res.ok) throw new Error(data.error || "Suosikkeja ei voitu ladata");
-
         setFavourites(data.favourites || []);
       } catch (err) {
         setError(err.message);
@@ -81,7 +80,7 @@ export function UserPage() {
     loadReviews();
   }, [token]);
 
-  // Hae TMDb-tiedot jokaiselle suosikille (julisteet ym.)
+  // Hae TMDb-tiedot jokaiselle suosikille
   useEffect(() => {
     async function loadMovieDetails() {
       if (!favourites.length) {
@@ -102,8 +101,7 @@ export function UserPage() {
               );
               if (!res.ok) throw new Error("TMDb haku epäonnistui");
               const data = await res.json();
-              // Liitetään käyttäjän arvostelu jos löytyy
-              const review = userReviews.find(r => r.tmdb_id === fav.tmdb_id);
+              const review = userReviews.find((r) => r.tmdb_id === fav.tmdb_id);
               return { tmdbId: fav.tmdb_id, data, review };
             } catch {
               return { tmdbId: fav.tmdb_id, data: null, review: null };
@@ -119,6 +117,7 @@ export function UserPage() {
     loadMovieDetails();
   }, [favourites, userReviews, TMDB_API_KEY, TMDB_BASE_URL]);
 
+  // Profiilin päivitys
   async function handleProfileUpdate(event) {
     event.preventDefault();
     if (!token) return;
@@ -136,12 +135,9 @@ export function UserPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Päivitys epäonnistui");
-
-      // Päivitä AuthContext uuteen tokeniin, jos tuli mukana
       if (data.user && (data.token || token)) {
         login(data.user, data.token || token);
       }
-
       setProfileStatus({ type: "success", message: "Profiili päivitetty" });
     } catch (err) {
       setProfileStatus({ type: "error", message: err.message });
@@ -150,6 +146,7 @@ export function UserPage() {
     }
   }
 
+  // Salasanan vaihto
   async function handlePasswordUpdate(event) {
     event.preventDefault();
     if (!token) return;
@@ -175,11 +172,9 @@ export function UserPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Salasanan vaihto epäonnistui");
-
       if (data.user && (data.token || token)) {
         login(data.user, data.token || token);
       }
-
       setPasswordStatus({ type: "success", message: "Salasana vaihdettu" });
       setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
     } catch (err) {
@@ -189,6 +184,7 @@ export function UserPage() {
     }
   }
 
+  // Tilin poisto
   async function handleDeleteAccount() {
     if (!token) return;
 
@@ -218,8 +214,7 @@ export function UserPage() {
     }
   }
 
-  if (!currentUser)
-    return <p>Kirjaudu sisään nähdäksesi profiilin.</p>;
+  if (!currentUser) return <p>Kirjaudu sisään nähdäksesi profiilin.</p>;
 
   return (
     <div>
@@ -377,7 +372,10 @@ export function UserPage() {
 
               {review ? (
                 <div className="user-review">
-                  <p>Tähdet: {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</p>
+                  <p>
+                    Tähdet: {"★".repeat(review.rating)}
+                    {"☆".repeat(5 - review.rating)}
+                  </p>
                   {review.review_text && <p>{review.review_text}</p>}
                 </div>
               ) : (
@@ -387,37 +385,6 @@ export function UserPage() {
           </div>
         ))}
       </div>
-
-      <h2>Omat arvostelusi</h2>
-
-      {userReviews.length === 0 ? (
-        <p>Et ole vielä tehnyt arvosteluja.</p>
-      ) : (
-        <div className="review-grid">
-          {userReviews.map((review) => {
-            const movieData = favouriteMovies.find(m => m.tmdbId === review.tmdb_id)?.data;
-            return (
-              <div key={review.id} className="review-card">
-                {movieData?.poster_path ? (
-                  <img
-                    src={`https://image.tmdb.org/t/p/w185${movieData.poster_path}`}
-                    alt={movieData.title}
-                  />
-                ) : (
-                  <div className="poster-placeholder">Ei julistetta</div>
-                )}
-                <div className="review-meta">
-                  <h3>{movieData?.title || `TMDb ID: ${review.tmdb_id}`}</h3>
-                  <p>Tähdet: {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</p>
-                  {review.review_text && <p>{review.review_text}</p>}
-                  <p className="review-date">Arvostelu tehty: {new Date(review.created_at).toLocaleDateString()}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
     </div>
   );
 }

@@ -10,6 +10,9 @@ router.post('/', authRequired, ReviewController.createReview);
 // Hae käyttäjän omat arvostelut
 router.get('/me', authRequired, ReviewController.getUserReviews);
 
+// Hae kaikki arvostelut tietylle elokuvalle (julkaistu kaikille)
+router.get('/', ReviewController.getReviewsByTmdbId);
+
 // Päivitä arvostelu
 router.put('/:id', authRequired, ReviewController.updateReview);
 
