@@ -10,11 +10,13 @@ import JGroup from "./pages/JGroup.jsx";
 import NGroup from "./pages/nGroup.jsx";
 import { AuthProvider } from "./AuthContext.jsx";
 import ReviewPage from "./pages/ReviewPage.jsx";
+import { SingleGroup } from "./pages/singleGroup.jsx";
 
 
 
 
 function App() {
+  /* Lisää tänne route ja ylemmäs import, jos haluat sivun näkyvän. Lisää link myös Navbar.jsx -tiedostoon, jos haluat sivun näkyvän dropdown -valikossa. */
   return (
     <AuthProvider>
       <div className="app">
@@ -28,6 +30,7 @@ function App() {
               <Route path="/jgroup" element={<JGroup />} />
               <Route path="/ngroup" element={<NGroup />} />
               <Route path="/reviews" element={<ReviewPage />} />
+              <Route path="/singlegroup" element={<SingleGroup />} />
             </Route>
           </Routes>
         </Router>
