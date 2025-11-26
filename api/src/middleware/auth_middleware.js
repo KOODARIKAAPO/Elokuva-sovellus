@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
 
+// Guards routes that require authentication. Expects Authorization: Bearer <token>
 export function authRequired(req, res, next) {
   const authHeader = req.headers.authorization;
 
@@ -13,7 +14,7 @@ export function authRequired(req, res, next) {
 
   try {
     const payload = jwt.verify(token, JWT_SECRET);
-    // payload: { id, username, email, iat, exp }
+    // payload contains { id, username, email, iat, exp }
     req.user = payload;
     next();
   } catch (err) {

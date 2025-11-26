@@ -1,15 +1,18 @@
 // src/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from "react";
 
+// Base URL for API calls from the frontend
 const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3001").replace(/\/$/, "");
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  // Token persisted in localStorage so refreshes keep you logged in
   const [token, setToken] = useState(() => localStorage.getItem("token"));
   const [currentUser, setCurrentUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
+  // Whenever the token changes, try to hydrate the user via /auth/me
   useEffect(() => {
     async function fetchUser() {
       if (!token) {
@@ -38,12 +41,14 @@ export function AuthProvider({ children }) {
     fetchUser();
   }, [token]);
 
+  // Save token + user to state/localStorage after a successful login/update
   function login(user, token) {
     setToken(token);
     localStorage.setItem("token", token);
     setCurrentUser(user);
   }
 
+  // Clear token/user
   function logout() {
     setToken(null);
     setCurrentUser(null);
