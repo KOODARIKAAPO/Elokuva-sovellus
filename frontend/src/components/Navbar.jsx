@@ -26,6 +26,7 @@ export function Navbar() {
           <Link to="/jgroup">Join Group</Link><br/>
           <Link to="/ngroup">New Group</Link><br/>
           <Link to="/user">User</Link><br/>
+          <Link to="/reviews">Arvostelut</Link><br/>
           <Link to="/signin">Sign In</Link><br/>
           <Link to="/login">Log In</Link><br/>
           {currentUser && (
