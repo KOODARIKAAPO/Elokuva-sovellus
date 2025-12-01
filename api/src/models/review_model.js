@@ -23,6 +23,18 @@ const ReviewModel = {
     return rows;
   },
 
+  async getReviewsByTmdbId(tmdb_id) {
+    const query = `
+      SELECT r.*, a.username
+      FROM review r
+      JOIN account a ON r.user_id = a.id
+      WHERE r.tmdb_id = $1
+      ORDER BY r.created_at DESC;
+    `;
+    const { rows } = await pool.query(query, [tmdb_id]);
+    return rows;
+  },
+
   async updateReview(id, rating, review_text) {
     const query = `
       UPDATE review
