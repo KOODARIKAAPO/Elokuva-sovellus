@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import debugRouter from "./routers/debug_router.js";
-import bookRouter from "./routers/book_router.js";
 import authRouter from "./routers/auth_router.js";
 import favouriteRouter from "./routers/favourite_router.js";
 import reviewRouter from "./routers/review_router.js";
@@ -21,7 +20,6 @@ app.get("/", (req, res) => {
 });
 
 app.use(debugRouter);
-app.use("/book", bookRouter);
 app.use("/auth", authRouter);
 app.use("/favourites", favouriteRouter);
 app.use("/reviews", reviewRouter);
