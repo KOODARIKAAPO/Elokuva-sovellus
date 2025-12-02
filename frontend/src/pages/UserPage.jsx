@@ -2,6 +2,7 @@
 import { useAuth } from "../AuthContext.jsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import MovieDetails from "../components/MovieDetails.jsx";
 
 export function UserPage() {
   const { currentUser, token, login, logout } = useAuth();
@@ -22,6 +23,11 @@ export function UserPage() {
   const [busyAction, setBusyAction] = useState(null);
   const [accountOpen, setAccountOpen] = useState(false);
   const [deleteArmed, setDeleteArmed] = useState(false);
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [selectedReview, setSelectedReview] = useState(null);
+  const [shareLink, setShareLink] = useState("");
+  const [shareStatus, setShareStatus] = useState(null);
+  const [shareBusy, setShareBusy] = useState(false);
 
   const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3001";
   const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -116,6 +122,85 @@ export function UserPage() {
 
     loadMovieDetails();
   }, [favourites, userReviews, TMDB_API_KEY, TMDB_BASE_URL]);
+
+  function handleOpenDetails(tmdbId) {
+    const id = Number(tmdbId);
+    const entry = favouriteMovies.find((m) => Number(m.tmdbId) === id);
+
+    if (entry?.data) {
+      // include tmdbId so removal works even if TMDb data uses a different key
+      setSelectedMovie({ ...entry.data, tmdbId: entry.tmdbId });
+      setSelectedReview(entry.review || null);
+    } else {
+      setSelectedMovie({
+        id,
+        tmdbId: id,
+        title: `TMDb ID: ${id}`,
+        overview: "Tietoja ei saatavilla.",
+      });
+      setSelectedReview(null);
+    }
+  }
+
+  function handleCloseDetails() {
+    setSelectedMovie(null);
+    setSelectedReview(null);
+  }
+
+  function handleFavouriteRemoved(tmdbId) {
+    const targetId = Number(tmdbId);
+    setFavourites((prev) =>
+      prev.filter((fav) => Number(fav.tmdb_id ?? fav.tmdbId ?? fav.id) !== targetId)
+    );
+    setFavouriteMovies((prev) => prev.filter((m) => Number(m.tmdbId) !== targetId));
+    handleCloseDetails();
+  }
+
+  function buildShareUrl(tokenValue) {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    return tokenValue ? `${origin}/shared/${tokenValue}` : "";
+  }
+
+  async function handleShare(regenerate = false) {
+    if (!token) return;
+    setShareBusy(true);
+    setShareStatus(null);
+
+    try {
+      const res = await fetch(`${API_BASE}/favourites/share`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ regenerate }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.token) {
+        throw new Error(data.error || "Linkin luonti epäonnistui");
+      }
+      const url = buildShareUrl(data.token);
+      setShareLink(url);
+      setShareStatus({
+        type: "success",
+        message: regenerate ? "Uusi jakolinkki luotu" : "Jakolinkki luotu",
+      });
+    } catch (err) {
+      setShareStatus({ type: "error", message: err.message });
+    } finally {
+      setShareBusy(false);
+    }
+  }
+
+  async function handleCopyShare() {
+    if (!shareLink) return;
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      setShareStatus({ type: "success", message: "Linkki kopioitu leikepöydälle" });
+    } catch {
+      setShareStatus({ type: "error", message: "Kopiointi epäonnistui" });
+    }
+  }
 
   // Profiilin päivitys
   async function handleProfileUpdate(event) {
@@ -216,16 +301,35 @@ export function UserPage() {
 
   if (!currentUser) return <p>Kirjaudu sisään nähdäksesi profiilin.</p>;
 
+  const stats = [
+    { label: "Suosikit", value: favourites.length },
+    { label: "Arviot", value: userReviews.length },
+  ];
+
   return (
-    <div>
-      <div className="user-header">
-        <div>
+    <div className="user-page">
+      <section className="card user-hero">
+        <div className="user-hero__text">
+          <p className="eyebrow">Profiili</p>
           <h1>Hei, {currentUser.username}!</h1>
+          <p className="hint">
+            Hallinnoi tiliäsi, selaa suosikkielokuviasi ja jaa lista helposti kavereille.
+          </p>
+          <div className="stat-pills">
+            {stats.map((stat) => (
+              <div key={stat.label} className="pill">
+                <span className="pill__value">{stat.value}</span>
+                <span className="pill__label">{stat.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
-        <button type="button" className="ghost-btn" onClick={() => setAccountOpen(true)}>
-          Hallinnoi tiliä
-        </button>
-      </div>
+        <div className="user-hero__actions">
+          <button type="button" className="ghost-btn" onClick={() => setAccountOpen(true)}>
+            Hallinnoi tiliä
+          </button>
+        </div>
+      </section>
 
       {accountOpen && (
         <div className="modal-backdrop" onClick={() => setAccountOpen(false)}>
@@ -349,7 +453,17 @@ export function UserPage() {
         </div>
       )}
 
-      <h2>Suosikkielokuvasi</h2>
+      <section className="card favourites-card">
+        <div className="section-header">
+          <div>
+            <p className="eyebrow">Suosikit</p>
+            <h2>Suosikkielokuvasi</h2>
+            <p className="hint">Avaa elokuvan tiedot ja poista se tarvittaessa listalta.</p>
+          </div>
+          <button type="button" className="ghost-btn" onClick={() => setAccountOpen(true)}>
+            Päivitä tietoja
+          </button>
+        </div>
 
       {error && <p className="status error">{error}</p>}
       {loading && <p>Ladataan suosikkeja...</p>}
@@ -381,10 +495,67 @@ export function UserPage() {
               ) : (
                 <p>Et ole arvostellut tätä elokuvaa</p>
               )}
+              <button
+                type="button"
+                className="ghost-btn"
+                onClick={() => handleOpenDetails(tmdbId)}
+              >
+                Näytä tiedot
+              </button>
             </div>
           </div>
         ))}
       </div>
+      </section>
+
+      <section className="card">
+        <div className="section-header">
+          <div>
+            <p className="eyebrow">Jaa</p>
+            <h2>Jaa suosikkilista</h2>
+            <p className="hint">
+              Luo linkki, jonka avulla muut voivat nähdä suosikkisi. Voit luoda uuden linkin ja
+              mitätöidä vanhan.
+            </p>
+          </div>
+        </div>
+        <div className="share-actions">
+          <button type="button" onClick={() => handleShare(false)} disabled={shareBusy}>
+            {shareBusy ? "Luodaan..." : shareLink ? "Hae jakolinkki" : "Luo jakolinkki"}
+          </button>
+          <button
+            type="button"
+            className="ghost-btn"
+            onClick={() => handleShare(true)}
+            disabled={shareBusy}
+          >
+            {shareBusy ? "Luodaan..." : "Luo uusi linkki"}
+          </button>
+        </div>
+        {shareLink && (
+          <div className="share-link-row">
+            <input type="text" readOnly value={shareLink} />
+            <button type="button" onClick={handleCopyShare}>
+              Kopioi
+            </button>
+          </div>
+        )}
+        {shareStatus && <p className={`status ${shareStatus.type}`}>{shareStatus.message}</p>}
+      </section>
+
+      {selectedMovie && (
+        <div className="modal-backdrop" onClick={handleCloseDetails}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <MovieDetails
+              movie={selectedMovie}
+              review={selectedReview}
+              isFavourite
+              onRemoveFavourite={handleFavouriteRemoved}
+              onClose={handleCloseDetails}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,7 +3,8 @@ CREATE TABLE account (
   id            SERIAL PRIMARY KEY,
   username      VARCHAR(255) UNIQUE NOT NULL,
   email         VARCHAR(255) UNIQUE NOT NULL,
-  hashedpassword VARCHAR(255) NOT NULL
+  hashedpassword VARCHAR(255) NOT NULL,
+  share_token   VARCHAR(64) UNIQUE
 );
 
 

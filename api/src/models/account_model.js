@@ -122,6 +122,46 @@ export async function updateAccountPassword(id, hashedPassword) {
   return rows[0] ?? null;
 }
 
+export async function getShareTokenForUser(userId) {
+  const { rows } = await pool.query(
+    `
+    SELECT share_token
+    FROM account
+    WHERE id = $1
+    LIMIT 1
+    `,
+    [userId]
+  );
+  return rows[0]?.share_token ?? null;
+}
+
+export async function setShareToken(userId, token) {
+  const { rows } = await pool.query(
+    `
+    UPDATE account
+    SET share_token = $1
+    WHERE id = $2
+    RETURNING share_token
+    `,
+    [token, userId]
+  );
+  return rows[0]?.share_token ?? null;
+}
+
+export async function findAccountByShareToken(token) {
+  if (!token) return null;
+  const { rows } = await pool.query(
+    `
+    SELECT id, username, email, share_token
+    FROM account
+    WHERE share_token = $1
+    LIMIT 1
+    `,
+    [token]
+  );
+  return rows[0] ?? null;
+}
+
 // Poistaa käyttäjän ja kaikki ryhmät, joissa käyttäjä on owner (viestit/arviot voivat säilyä)
 export async function deleteAccountAndOwnedGroups(id) {
   const client = await pool.connect();
