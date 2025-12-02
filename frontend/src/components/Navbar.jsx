@@ -17,18 +17,21 @@ export function Navbar() {
   return (
     
     <div className="dropdown">
-      <button onClick={() => setOpen((o) => !o)}>
+      <button className="dropbtn" onClick={() => setOpen((o) => !o)}>
         Menu ▼
       </button>
      {open && (
       /* Lisää tänne linkki, jos haluat sivun näkyvän dropdown-valikossa. Lisää route myös App.jsx -tiedostoon. */
-        <div className="dropdown-content">
+        <div className="dropdown-content open">
           <Link to="/">Home</Link><br/>
           <Link to="/jgroup">Groups</Link><br/>
           <Link to="/user">User</Link><br/>
           <Link to="/reviews">Arvostelut</Link><br/>
-          <Link to="/signin">Sign Up</Link><br/>
-          <Link to="/login">Log In</Link><br/>
+          {!currentUser && (
+            <>
+              <Link to="/login">Kirjaudu</Link><br/>
+            </>
+          )}
           <Link to="/singlegroup">Single Group</Link><br/>
           {currentUser && (
             <>
