@@ -134,7 +134,10 @@ export default function ReviewModal({ movie, onClose }) {
               style={{ width: "100%", marginTop: "5px" }}
             />
 
-            <button onClick={handleSubmit} style={{ marginTop: "5px" }}>
+            <button 
+              onClick={handleSubmit} 
+              style={{ marginTop: "5px", padding: "8px 16px", fontSize: "1rem" }}
+            >
               Lähetä arvostelu
             </button>
           </>
