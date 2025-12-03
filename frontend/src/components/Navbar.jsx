@@ -31,7 +31,7 @@ export function Navbar() {
               <Link to="/login">Kirjaudu</Link><br/>
             </>
           )}
-          <Link to="/singlegroup">Single Group</Link><br/>
+          
           {currentUser && (
             <>
               <button className="menu-button" onClick={handleLogout}>Log Out</button><br/>

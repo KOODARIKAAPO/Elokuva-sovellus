@@ -28,6 +28,7 @@ export function UserPage() {
   const [shareLink, setShareLink] = useState("");
   const [shareStatus, setShareStatus] = useState(null);
   const [shareBusy, setShareBusy] = useState(false);
+  const [myGroups, setMyGroups] = useState([]);
 
   const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3001";
   const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -85,6 +86,29 @@ export function UserPage() {
 
     loadReviews();
   }, [token]);
+
+
+  // Hae käyttäjän omistamat ryhmät
+useEffect(() => {
+  if (!currentUser) return;
+
+  async function loadMyGroups() {
+    try {
+      const res = await fetch(`${API_BASE}/groups`);
+      const data = await res.json();
+
+      const mine = Array.isArray(data)
+        ? data.filter(g => g.owner_id === currentUser.id)
+        : [];
+
+      setMyGroups(mine);
+    } catch (err) {
+      console.error("Ryhmien haku epäonnistui:", err);
+    }
+  }
+
+  loadMyGroups();
+}, [currentUser]);
 
   // Hae TMDb-tiedot jokaiselle suosikille
   useEffect(() => {
@@ -542,6 +566,28 @@ export function UserPage() {
         )}
         {shareStatus && <p className={`status ${shareStatus.type}`}>{shareStatus.message}</p>}
       </section>
+
+      <section className="card">
+  <p className="eyebrow">Ryhmät</p>
+  <h2>Sinun luomasi ryhmät</h2>
+
+  {myGroups.length === 0 ? (
+    <p>Et ole vielä luonut ryhmiä.</p>
+  ) : (
+    <div className="groups-list">
+      {myGroups.map((group) => (
+        <div
+          key={group.id}
+          className="group-item"
+          onClick={() => navigate(`/groups/${group.id}`)}
+          style={{ cursor: "pointer", margin: "0.5rem 0" }}
+        >
+          <strong>{group.name}</strong>
+        </div>
+      ))}
+    </div>
+  )}
+</section>
 
       {selectedMovie && (
         <div className="modal-backdrop" onClick={handleCloseDetails}>

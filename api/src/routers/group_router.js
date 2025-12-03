@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { listGroups, createGroup } from "../controllers/group_controller.js";
+import { listGroups, createGroup, getGroupById } from "../controllers/group_controller.js";
 
 const router = Router();
 
@@ -8,5 +8,9 @@ router.get("/", listGroups);
 
 // POST /groups
 router.post("/", createGroup);
+
+// GET /groups/:id
+router.get("/:id", getGroupById);
+
 
 export default router;

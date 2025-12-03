@@ -79,13 +79,7 @@ export function Home() {
             </div>
           </div>
         )}
-
-        <Card title="Tervetuloa Elokuvasovellukseen">
-          <p>
-            Täällä voit liittyä ryhmiin. Luoda suosikkilistoja ja vaihtaa ajatuksia muiden
-            elokuvien ystävien kanssa!
-          </p>
-        </Card>
+        
       </section>
 
       {showReviewModal && selectedMovie && (

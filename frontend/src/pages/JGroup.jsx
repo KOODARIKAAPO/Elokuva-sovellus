@@ -80,9 +80,20 @@ const groupsToShow = filteredGroups.length > 0 ? filteredGroups : groups;
   ) : (
     <div className="groups-list">
       {(filteredGroups.length > 0 ? filteredGroups : groups).map((group) => (
-        <div key={group.id} className="group-item">
-          <span>{group.name}</span>
-        </div>
+        <div
+         key={group.id}
+         className="group-item"
+         onClick={() => {
+       if (!currentUser) {
+        alert("Sinun täytyy kirjautua sisään nähdäksesi ryhmän.");
+        return;
+    }
+        navigate(`/groups/${group.id}`);
+  }}
+      style={{ cursor: "pointer" }}
+  >
+     <span>{group.name}</span>
+</div>
       ))}
     </div>
   )}
