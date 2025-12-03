@@ -1,8 +1,14 @@
+.nav-wrapper {
+  position: sticky;
+  top: 0.75rem;
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
 .dropdown {
-  position: fixed;
-  top: 1rem;
-  left: 1rem;
-  z-index: 1000;
+  position: relative;
   display: inline-block;
 }
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import LoginForm from "../components/LoginForm.jsx";
 import RegisterForm from "../components/RegisterForm.jsx";
 import { useAuth } from "../AuthContext.jsx";
@@ -24,6 +25,7 @@ export function LogIn() {
   const [busyAction, setBusyAction] = useState(null);
 
   const { login } = useAuth();  
+  const navigate = useNavigate();
 
   const apiDocs = {
     login: `${apiBaseUrl}/auth/login`,
@@ -69,6 +71,7 @@ export function LogIn() {
 
       setLoginStatus({ type: "success", message: "Kirjauduttu sisään!" });
       setLoginForm({ ...emptyLoginForm });
+      navigate("/user");
 
     } catch (err) {
       setLoginStatus({ type: "error", message: err.message });
