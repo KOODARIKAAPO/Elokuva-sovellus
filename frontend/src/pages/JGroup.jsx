@@ -46,16 +46,6 @@ const groupsToShow = filteredGroups.length > 0 ? filteredGroups : groups;
         <button
           type="button"
           onClick={() => {
-            if (typeof onBack === "function") return onBack();
-            if (window.history.length > 1) return navigate(-1);
-            return navigate("/");
-          }}
-        >
-          ← Back
-        </button>
-        <button
-          type="button"
-          onClick={() => {
             if (onNavigate) return onNavigate("ngroup");
             return navigate("/ngroup");
           }}

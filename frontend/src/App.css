@@ -790,6 +790,7 @@ button:disabled {
 .movie-actions .status {
   margin-top: 10px;
   color: #4caf50;
+}
 
 .group-item {
   display: flex;
