@@ -31,11 +31,18 @@ function MovieCarousel({ onSelectMovie }) {
   }, []);
 
   return (
-    <div style={{ width: "100%", padding: "20px 0" }}>
+    <div style={{ width: "100%", padding: "0" }}>
       <Swiper
         modules={[Autoplay]}
-        spaceBetween={20}
-        slidesPerView={5}
+        spaceBetween={16}
+        slidesPerView={4}
+        breakpoints={{
+          0: { slidesPerView: 2.2, spaceBetween: 10 },
+          520: { slidesPerView: 2.6, spaceBetween: 12 },
+          768: { slidesPerView: 3.4, spaceBetween: 14 },
+          1024: { slidesPerView: 4, spaceBetween: 16 },
+          1280: { slidesPerView: 4, spaceBetween: 18 },
+        }}
         loop={true}
         autoplay={{ delay: 2500, disableOnInteraction: false }}
       >

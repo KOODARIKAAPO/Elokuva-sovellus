@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import "./SearchBar.css";
 
 const MovieSearch = ({ query: propQuery = "", onQueryChange, onSelectMovie }) => {
   const [query, setQuery] = useState(propQuery || "");
@@ -92,22 +93,26 @@ const MovieSearch = ({ query: propQuery = "", onQueryChange, onSelectMovie }) =>
   };
 
   const renderItem = (item) => {
+    const clickable = typeof onSelectMovie === "function";
+
     if (filter === "movie" || filter === "tv") {
       const poster = item.poster_path
         ? `https://image.tmdb.org/t/p/w300${item.poster_path}`
         : "https://via.placeholder.com/300x450?text=Ei+kuvaa";
 
       return (
-        <div key={item.id} style={{ width: "200px", textAlign: "center" }}>
+        <div
+          key={item.id}
+          className={`search-card${clickable ? " is-clickable" : ""}`}
+          onClick={() => clickable && onSelectMovie(item)}
+        >
           <img
             src={poster}
-            style={{ width: "100%", borderRadius: "8px", cursor: onSelectMovie ? "pointer" : "default" }}
-            onClick={() => typeof onSelectMovie === "function" && onSelectMovie(item)}
+            alt={item.title || item.name}
+            className="search-card__poster"
           />
           <h3>{item.title || item.name}</h3>
-          <p onClick={() => typeof onSelectMovie === "function" && onSelectMovie(item)} style={{ cursor: onSelectMovie ? "pointer" : "default" }}>
-            {item.release_date || item.first_air_date}
-          </p>
+          <p className="search-card__meta">{item.release_date || item.first_air_date}</p>
         </div>
       );
     }
@@ -121,14 +126,15 @@ const MovieSearch = ({ query: propQuery = "", onQueryChange, onSelectMovie }) =>
     const directedMovies = (item.directed && item.directed.length) ? item.directed : [];
 
     return (
-      <div key={item.id} style={{ width: "100%", maxWidth: "600px", textAlign: "left", marginBottom: "24px" }}>
-        <div style={{ display: "flex", gap: "16px", alignItems: "flex-start" }}>
+      <div key={item.id} className="person-card">
+        <div className="person-card__header">
           <img
             src={photo}
-            style={{ width: "120px", borderRadius: "8px", cursor: onSelectMovie ? "pointer" : "default" }}
-            onClick={() => typeof onSelectMovie === "function" && onSelectMovie(item)}
+            alt={item.name}
+            className="person-card__photo"
+            onClick={() => clickable && onSelectMovie(item)}
           />
-          <div>
+          <div className="person-card__text">
             <h3 style={{ margin: 0 }}>{item.name}</h3>
             <p style={{ margin: "4px 0" }}>{item.known_for_department}</p>
             {item.biography && <p style={{ marginTop: 8 }}>{item.biography}</p>}
@@ -137,9 +143,9 @@ const MovieSearch = ({ query: propQuery = "", onQueryChange, onSelectMovie }) =>
 
         { }
         {(personMovies.length > 0 || directedMovies.length > 0) && (
-          <div style={{ marginTop: 12 }}>
+          <div className="person-card__movies">
             <h4 style={{ margin: "8px 0" }}>Elokuvat</h4>
-            <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 8 }}>
+            <div className="person-card__movie-grid">
               {(personMovies.length > 0 ? personMovies : directedMovies)
                 .slice(0, 12)
                 .map((m) => {
@@ -147,35 +153,13 @@ const MovieSearch = ({ query: propQuery = "", onQueryChange, onSelectMovie }) =>
                     ? `https://image.tmdb.org/t/p/w200${m.poster_path}`
                     : "https://via.placeholder.com/200x300?text=Ei+kuvaa";
                   return (
-                    <div
-                      key={m.id}
-                      style={{
-                        width: 120,
-                        textAlign: "center",
-                        cursor: onSelectMovie ? "pointer" : "default",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                      }}
-                      onClick={() => typeof onSelectMovie === "function" && onSelectMovie(m)}
-                    >
+                    <div key={m.id} className="person-card__movie" onClick={() => clickable && onSelectMovie(m)}>
                       <img
                         src={poster}
                         alt={m.title || m.name}
-                        style={{ width: "100%", height: 180, objectFit: "cover", borderRadius: 6 }}
+                        className="person-card__movie-poster"
                       />
-                      <div
-                        style={{
-                          fontSize: 12,
-                          marginTop: 6,
-                          width: "100%",
-                          textAlign: "center",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                        title={m.title || m.name}
-                      >
+                      <div className="person-card__movie-title" title={m.title || m.name}>
                         {m.title || m.name}
                       </div>
                     </div>
@@ -189,35 +173,37 @@ const MovieSearch = ({ query: propQuery = "", onQueryChange, onSelectMovie }) =>
   };
 
   return (
-    <div>
-      <h2>Hae TMDb:stä</h2>
+    <div className="search-panel">
+      <h2>Hae elokuvia & sarjoja</h2>
 
-      <input
-        type="text"
-        value={query}
-        placeholder="Etsi..."
-        onChange={(e) => {
-          const v = e.target.value;
-          setQuery(v);
-          if (typeof onQueryChange === "function") onQueryChange(v);
-        }}
-        style={{ padding: "8px", width: "300px", marginRight: "10px" }}
-      />
+      <div className="search-controls">
+        <input
+          type="text"
+          value={query}
+          placeholder="Etsi..."
+          onChange={(e) => {
+            const v = e.target.value;
+            setQuery(v);
+            if (typeof onQueryChange === "function") onQueryChange(v);
+          }}
+          className="search-input"
+        />
 
-      <select
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-        style={{ padding: "8px" }}
-      >
-        <option value="movie">Elokuvat</option>
-        <option value="tv">Sarjat</option>
-        <option value="person">Näyttelijät</option>
-        <option value="director">Ohjaajat</option>
-      </select>
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="search-filter"
+        >
+          <option value="movie">Elokuvat</option>
+          <option value="tv">Sarjat</option>
+          <option value="person">Näyttelijät</option>
+          <option value="director">Ohjaajat</option>
+        </select>
+      </div>
 
       {loading && <p>Haetaan...</p>}
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", marginTop: "20px" }}>
+      <div className="search-grid">
         {Array.isArray(results) && results.map(renderItem)}
       </div>
     </div>

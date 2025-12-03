@@ -11,7 +11,13 @@ export function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [showMovieModal, setShowMovieModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
+
+  function openMovie(movie) {
+    setSelectedMovie(movie);
+    setShowMovieModal(true);
+  }
 
   async function handleSearch(query) {
     setSearchQuery(query);
@@ -23,6 +29,7 @@ export function Home() {
         `${TMDB_BASE}/search/movie?api_key=${apiKey}&query=${encodeURIComponent(query)}`
       );
       if (!response.ok) throw new Error("Haku epäonnistui TMDb:stä");
+
       const data = await response.json();
       setSearchResults(data.results || []);
     } catch (error) {
@@ -33,43 +40,90 @@ export function Home() {
 
   return (
     <>
-      <header className="app-header">
-        <div className="header-copy">
-          <h1>ABSOLUTE CINEMA</h1>
-          <p>Tervetuloa etusivulle.</p>
-        </div>
-      </header>
+      <section className="card home-hero">
+        <h1>ABSOLUTE CINEMA</h1>
+        <p className="hint">Tervetuloa etusivulle.</p>
+      </section>
 
       <section className="view">
-        <MovieCarousel onSelectMovie={setSelectedMovie} />
 
-        <SearchBar
-          query={searchQuery}
-          onQueryChange={setSearchQuery}
-          onSearch={handleSearch}
-          onSelectMovie={setSelectedMovie}
-        />
 
-        {searchResults.length > 0 && (
-          <div className="search-results">
-            {searchResults.map((movie) => (
-              <div key={movie.id} className="search-result-item">
-                <div
-                  onClick={() => setSelectedMovie(movie)}
-                  style={{ cursor: "pointer", fontWeight: selectedMovie?.id === movie.id ? "bold" : "normal" }}
-                >
-                  {movie.title} ({movie.release_date?.slice(0, 4) || "n/a"})
+        <MovieCarousel onSelectMovie={openMovie} />
+
+
+        <Card className="search-shell">
+          <SearchBar
+            query={searchQuery}
+            onQueryChange={setSearchQuery}
+            onSearch={handleSearch}
+            onSelectMovie={openMovie}
+          />
+
+
+          {searchResults.length > 0 && (
+            <div className="search-results">
+              {searchResults.map((movie) => (
+                <div key={movie.id} className="search-result-item">
+                  <div
+                    onClick={() => openMovie(movie)}
+                    style={{
+                      cursor: "pointer",
+                      fontWeight:
+                        selectedMovie?.id === movie.id ? "bold" : "normal",
+                    }}
+                  >
+                    {movie.title} ({movie.release_date?.slice(0, 4) || "n/a"})
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </Card>
 
-        {selectedMovie && (
-          <div>
-            <MovieDetails movie={selectedMovie} onClose={() => setSelectedMovie(null)} />
 
-            <div style={{ textAlign: "center", marginTop: "10px" }}>
+
+      </section>
+
+
+      {showMovieModal && selectedMovie && (
+        <div
+          onClick={() => setShowMovieModal(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: showReviewModal ? "rgba(0,0,0,0.2)" : "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "linear-gradient(135deg, #0f172a, #1b2435)",
+              color: "#e2e8f0",
+              padding: "20px",
+              borderRadius: "12px",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
+              boxShadow: "0 14px 30px rgba(15, 23, 42, 0.28)",
+              width: "600px",
+              maxHeight: "80vh",
+              overflowY: "auto",
+              filter: showReviewModal ? "blur(2px)" : "none",
+              transition: "filter 0.2s",
+            }}
+          >
+            <MovieDetails
+              movie={selectedMovie}
+              onClose={() => setShowMovieModal(false)}
+              showActions={true}
+            />
+
+            <div style={{ marginTop: "10px", textAlign: "center" }}>
               <button
                 onClick={() => setShowReviewModal(true)}
                 style={{ padding: "8px 16px", fontSize: "1rem" }}
@@ -77,10 +131,17 @@ export function Home() {
                 Siirry arvosteluihin
               </button>
             </div>
+
+            <button
+              onClick={() => setShowMovieModal(false)}
+              style={{ marginTop: "15px" }}
+            >
+              Sulje
+            </button>
           </div>
-        )}
-        
-      </section>
+        </div>
+      )}
+
 
       {showReviewModal && selectedMovie && (
         <ReviewModal
