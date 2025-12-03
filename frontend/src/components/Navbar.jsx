@@ -1,12 +1,18 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useAuth } from "../AuthContext.jsx";
 import "./Navbar.css";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const location = useLocation();
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
+
+  // Close dropdown after any navigation
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
 
   function handleLogout() {
     logout();

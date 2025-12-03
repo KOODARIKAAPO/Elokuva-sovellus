@@ -114,17 +114,17 @@ export default function MovieDetails({
             <div className="movie-actions">
               {isFavourite && onRemoveFavourite ? (
                 <button 
+                  className="modal-cta"
                   onClick={removeFavourite} 
                   disabled={busyAction === "remove"}
-                  style={{ padding: "8px 16px", fontSize: "1rem" }}
                 >
                   {busyAction === "remove" ? "Poistetaan..." : "Poista suosikeista"}
                 </button>
               ) : (
                 <button 
+                  className="modal-cta"
                   onClick={addFavourite} 
                   disabled={busyAction === "add"}
-                  style={{ padding: "8px 16px", fontSize: "1rem" }}
                 >
                   {busyAction === "add" ? "Lisätään..." : "⭐ Lisää suosikkeihin"}
                 </button>

@@ -486,6 +486,10 @@ button:disabled {
   color: #e2e8f0;
 }
 
+.modal-cta {
+  width: 100%;
+}
+
 .modal-header {
   display: flex;
   align-items: center;
@@ -658,6 +662,7 @@ button:disabled {
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
 }
 
+/* Down to tablet: stack user hero columns and left-align actions */
 @media (max-width: 960px) {
   .user-hero {
     grid-template-columns: 1fr;
@@ -668,6 +673,7 @@ button:disabled {
   }
 }
 
+/* Small tablet and below: stack section headers and center favourite cards */
 @media (max-width: 768px) {
   .section-header {
     flex-direction: column;
@@ -698,6 +704,7 @@ button:disabled {
   }
 }
 
+/* Mobile: tighter app padding and full-width primary buttons */
 @media (max-width: 640px) {
   .app {
     width: calc(100% - 1.25rem);
