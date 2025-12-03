@@ -5,7 +5,7 @@ import { useAuth } from "../AuthContext.jsx";
 
 function NGroup({ onBack }) {
   const navigate = useNavigate();
-  const { currentUser, token } = useAuth(); // token AuthContextista
+  const { currentUser, token } = useAuth();
   const [name, setName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState(null);
@@ -25,7 +25,7 @@ function NGroup({ onBack }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, // TÄÄLLÄ TOKEN MUKANA
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({ name: name.trim(), owner_id: currentUser.id }),
       });
