@@ -5,32 +5,41 @@ import { useAuth } from "../AuthContext.jsx";
 
 function NGroup({ onBack }) {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, token } = useAuth(); // token AuthContextista
   const [name, setName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState(null);
 
   const handleCreate = async () => {
     setError(null);
+
     if (!name.trim()) return setError("Group name cannot be empty");
     if (!currentUser?.id) return setError("Please log in to create a group");
+    if (!token) return setError("Missing token, please log in again");
+
     setIsCreating(true);
+
     try {
       const apiBaseUrl = (import.meta.env.VITE_API_URL || "http://localhost:3001").replace(/\/$/, "");
       const response = await fetch(`${apiBaseUrl}/groups`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // TÄÄLLÄ TOKEN MUKANA
+        },
         body: JSON.stringify({ name: name.trim(), owner_id: currentUser.id }),
       });
+
       const text = await response.text();
       let data = {};
       try {
         data = text ? JSON.parse(text) : {};
       } catch (parseErr) {
-
         data = { error: text || "Non-JSON response from server" };
       }
+
       if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+
       setName("");
       if (typeof onBack === "function") onBack();
       else if (window.history.length > 1) navigate(-1);
@@ -41,22 +50,9 @@ function NGroup({ onBack }) {
       setIsCreating(false);
     }
   };
-  
-  return (
-    <div style={{ maxWidth: 720, margin: "2rem auto", padding: "1rem" }}>
-      <div style={{ marginBottom: 12, display: "flex", gap: "0.5rem" }}>
-        <button
-          type="button"
-          onClick={() => {
-            if (typeof onBack === "function") return onBack();
-            if (window.history.length > 1) return navigate(-1);
-            return navigate("/jgroup");
-          }}
-        >
-          ← Back
-        </button>
-      </div>
 
+  return (
+    <div className="ngroup-container">
       <Card title="Create Group">
         <div style={{ display: "flex", gap: 8 }}>
           <input
