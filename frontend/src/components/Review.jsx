@@ -87,9 +87,12 @@ export default function ReviewModal({ movie, onClose }) {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "white",
+          background: "linear-gradient(135deg, #0f172a, #1b2435)",
+          color: "#e2e8f0",
+          border: "1px solid rgba(255, 255, 255, 0.12)",
+          boxShadow: "0 14px 30px rgba(15, 23, 42, 0.28)",
           padding: "20px",
-          borderRadius: "8px",
+          borderRadius: "12px",
           width: "600px",
           maxHeight: "80vh",
           overflowY: "auto",

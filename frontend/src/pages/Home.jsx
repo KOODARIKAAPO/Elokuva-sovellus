@@ -81,6 +81,7 @@ export function Home() {
         </Card>
 
 
+
       </section>
 
 
@@ -103,9 +104,12 @@ export function Home() {
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: "white",
+              background: "linear-gradient(135deg, #0f172a, #1b2435)",
+              color: "#e2e8f0",
               padding: "20px",
-              borderRadius: "8px",
+              borderRadius: "12px",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
+              boxShadow: "0 14px 30px rgba(15, 23, 42, 0.28)",
               width: "600px",
               maxHeight: "80vh",
               overflowY: "auto",
