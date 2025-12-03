@@ -174,7 +174,7 @@ const MovieSearch = ({ query: propQuery = "", onQueryChange, onSelectMovie }) =>
 
   return (
     <div className="search-panel">
-      <h2>Hae TMDb:stä</h2>
+      <h2>Hae elokuvia & sarjoja</h2>
 
       <div className="search-controls">
         <input

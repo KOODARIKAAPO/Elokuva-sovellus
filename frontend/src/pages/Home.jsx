@@ -14,6 +14,11 @@ export function Home() {
   const [showMovieModal, setShowMovieModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
 
+  function openMovie(movie) {
+    setSelectedMovie(movie);
+    setShowMovieModal(true);
+  }
+
   async function handleSearch(query) {
     setSearchQuery(query);
     const apiKey = import.meta.env.VITE_TMDB_API_KEY;
@@ -24,6 +29,7 @@ export function Home() {
         `${TMDB_BASE}/search/movie?api_key=${apiKey}&query=${encodeURIComponent(query)}`
       );
       if (!response.ok) throw new Error("Haku epäonnistui TMDb:stä");
+
       const data = await response.json();
       setSearchResults(data.results || []);
     } catch (error) {
@@ -40,12 +46,9 @@ export function Home() {
       </section>
 
       <section className="view">
-        <MovieCarousel
-          onSelectMovie={(movie) => { 
-            setSelectedMovie(movie); 
-            setShowMovieModal(true);
-          }}
-        />
+
+
+        <MovieCarousel onSelectMovie={openMovie} />
 
 
         <Card className="search-shell">
@@ -53,10 +56,7 @@ export function Home() {
             query={searchQuery}
             onQueryChange={setSearchQuery}
             onSearch={handleSearch}
-            onSelectMovie={(movie) => {
-              setSelectedMovie(movie);
-              setShowMovieModal(true);
-            }}
+            onSelectMovie={openMovie}
           />
 
 
@@ -65,13 +65,11 @@ export function Home() {
               {searchResults.map((movie) => (
                 <div key={movie.id} className="search-result-item">
                   <div
-                    onClick={() => { 
-                      setSelectedMovie(movie); 
-                      setShowMovieModal(true);
-                    }}
-                    style={{ 
-                      cursor: "pointer", 
-                      fontWeight: selectedMovie?.id === movie.id ? "bold" : "normal" 
+                    onClick={() => openMovie(movie)}
+                    style={{
+                      cursor: "pointer",
+                      fontWeight:
+                        selectedMovie?.id === movie.id ? "bold" : "normal",
                     }}
                   >
                     {movie.title} ({movie.release_date?.slice(0, 4) || "n/a"})
@@ -83,16 +81,7 @@ export function Home() {
         </Card>
 
 
-        {selectedMovie && (
-          <Card className="selected-movie-card">
-            <MovieDetails 
-              movie={selectedMovie} 
-              onClose={() => setSelectedMovie(null)} 
-            />
-          </Card>
-        )}
 
-        
       </section>
 
 
@@ -128,10 +117,10 @@ export function Home() {
               transition: "filter 0.2s",
             }}
           >
-            <MovieDetails 
-              movie={selectedMovie} 
-              onClose={() => setShowMovieModal(false)} 
-              showActions={true} 
+            <MovieDetails
+              movie={selectedMovie}
+              onClose={() => setShowMovieModal(false)}
+              showActions={true}
             />
 
             <div style={{ marginTop: "10px", textAlign: "center" }}>
@@ -143,8 +132,8 @@ export function Home() {
               </button>
             </div>
 
-            <button 
-              onClick={() => setShowMovieModal(false)} 
+            <button
+              onClick={() => setShowMovieModal(false)}
               style={{ marginTop: "15px" }}
             >
               Sulje
