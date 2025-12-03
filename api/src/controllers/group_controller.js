@@ -30,7 +30,30 @@ export async function createGroup(req, res, next) {
   }
 }
 
+export async function getGroupById(req, res, next) {
+  try {
+    const id = Number(req.params.id);
+    if (!id) {
+      return res.status(400).json({ error: "Invalid group ID" });
+    }
+
+    const { rows } = await pool.query(
+      "SELECT * FROM groups WHERE id = $1",
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Group not found" });
+    }
+
+    return res.json(rows[0]);
+  } catch (err) {
+    return next(err);
+  }
+}
+
 export default {
   listGroups,
   createGroup,
+  getGroupById,
 };

@@ -27,7 +27,7 @@ function App() {
               <Route path="/login" element={<LogIn />} />
               <Route path="/jgroup" element={<JGroup />} />
               <Route path="/ngroup" element={<NGroup />} />
-              <Route path="/singlegroup" element={<SingleGroup />} />
+              <Route path="/groups/:id" element={<SingleGroup />} />
               <Route path="/shared/:token" element={<SharedFavourites />} />
             </Route>
           </Routes>
