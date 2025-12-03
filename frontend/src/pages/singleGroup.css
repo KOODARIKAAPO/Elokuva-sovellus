@@ -1,0 +1,51 @@
+.single-group {
+  padding: 20px;
+}
+
+.single-group h1 {
+  margin-top: 0;
+}
+
+.status-message {
+  color: #4caf50;
+  margin-bottom: 10px;
+}
+
+.group-movie-list {
+  list-style: none;
+  padding: 0;
+}
+
+.group-movie-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.group-movie-left {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.group-movie-poster {
+  border-radius: 4px;
+  width: 50px;
+}
+
+.release-year {
+  margin: 5px 0;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.remove-button {
+  padding: 6px 12px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
