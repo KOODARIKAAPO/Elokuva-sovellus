@@ -86,11 +86,12 @@ export default function MovieDetails({
       <div className="movie-meta">
         {movie.poster_path ? (
           <img
-            src={`https://image.tmdb.org/t/p/w342${movie.poster_path}`}
+            src={`https://image.tmdb.org/t/p/w154${movie.poster_path}`}
             alt={movie.title}
+            style={{ borderRadius: "4px", width: "120px" }}
           />
         ) : (
-          <div className="poster-placeholder">Ei kuvaa</div>
+          <div className="poster-placeholder" style={{ width: "120px", height: "180px" }}>Ei kuvaa</div>
         )}
 
         <div className="movie-text">
@@ -112,11 +113,19 @@ export default function MovieDetails({
           {showActions && (
             <div className="movie-actions">
               {isFavourite && onRemoveFavourite ? (
-                <button onClick={removeFavourite} disabled={busyAction === "remove"}>
+                <button 
+                  onClick={removeFavourite} 
+                  disabled={busyAction === "remove"}
+                  style={{ padding: "8px 16px", fontSize: "1rem" }}
+                >
                   {busyAction === "remove" ? "Poistetaan..." : "Poista suosikeista"}
                 </button>
               ) : (
-                <button onClick={addFavourite} disabled={busyAction === "add"}>
+                <button 
+                  onClick={addFavourite} 
+                  disabled={busyAction === "add"}
+                  style={{ padding: "8px 16px", fontSize: "1rem" }}
+                >
                   {busyAction === "add" ? "Lisätään..." : "⭐ Lisää suosikkeihin"}
                 </button>
               )}

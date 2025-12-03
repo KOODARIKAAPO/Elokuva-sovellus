@@ -11,6 +11,7 @@ export function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [showMovieModal, setShowMovieModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
 
   async function handleSearch(query) {
@@ -41,13 +42,21 @@ export function Home() {
       </header>
 
       <section className="view">
-        <MovieCarousel onSelectMovie={setSelectedMovie} />
+        <MovieCarousel
+          onSelectMovie={(movie) => { 
+            setSelectedMovie(movie); 
+            setShowMovieModal(true);
+          }}
+        />
 
         <SearchBar
           query={searchQuery}
           onQueryChange={setSearchQuery}
           onSearch={handleSearch}
-          onSelectMovie={setSelectedMovie}
+          onSelectMovie={(movie) => {
+            setSelectedMovie(movie);
+            setShowMovieModal(true);
+          }}
         />
 
         {searchResults.length > 0 && (
@@ -55,28 +64,16 @@ export function Home() {
             {searchResults.map((movie) => (
               <div key={movie.id} className="search-result-item">
                 <div
-                  onClick={() => setSelectedMovie(movie)}
+                  onClick={() => { 
+                    setSelectedMovie(movie); 
+                    setShowMovieModal(true);
+                  }}
                   style={{ cursor: "pointer", fontWeight: selectedMovie?.id === movie.id ? "bold" : "normal" }}
                 >
                   {movie.title} ({movie.release_date?.slice(0, 4) || "n/a"})
                 </div>
               </div>
             ))}
-          </div>
-        )}
-
-        {selectedMovie && (
-          <div>
-            <MovieDetails movie={selectedMovie} onClose={() => setSelectedMovie(null)} />
-
-            <div style={{ textAlign: "center", marginTop: "10px" }}>
-              <button
-                onClick={() => setShowReviewModal(true)}
-                style={{ padding: "8px 16px", fontSize: "1rem" }}
-              >
-                Siirry arvosteluihin
-              </button>
-            </div>
           </div>
         )}
 
@@ -87,6 +84,55 @@ export function Home() {
           </p>
         </Card>
       </section>
+
+      {showMovieModal && selectedMovie && (
+        <div
+          onClick={() => setShowMovieModal(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: showReviewModal ? "rgba(0,0,0,0.2)" : "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "white",
+              padding: "20px",
+              borderRadius: "8px",
+              width: "600px",
+              maxHeight: "80vh",
+              overflowY: "auto",
+              filter: showReviewModal ? "blur(2px)" : "none",
+              transition: "filter 0.2s",
+            }}
+          >
+            <MovieDetails 
+              movie={selectedMovie} 
+              onClose={() => setShowMovieModal(false)} 
+              showActions={true} 
+            />
+
+            <div style={{ marginTop: "10px", textAlign: "center" }}>
+              <button
+                onClick={() => setShowReviewModal(true)}
+                style={{ padding: "8px 16px", fontSize: "1rem" }}
+              >
+                Siirry arvosteluihin
+              </button>
+            </div>
+
+            <button onClick={() => setShowMovieModal(false)} style={{ marginTop: "15px" }}>Sulje</button>
+          </div>
+        </div>
+      )}
 
       {showReviewModal && selectedMovie && (
         <ReviewModal
