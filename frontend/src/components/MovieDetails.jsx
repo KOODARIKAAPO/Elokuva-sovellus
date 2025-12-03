@@ -162,6 +162,7 @@ export default function MovieDetails({
             <div className="movie-actions">
               {isFavourite && onRemoveFavourite ? (
                 <button 
+                  className="modal-cta"
                   onClick={removeFavourite} 
                   disabled={busyAction === "remove"}
                 >
@@ -169,6 +170,7 @@ export default function MovieDetails({
                 </button>
               ) : (
                 <button 
+                  className="modal-cta"
                   onClick={addFavourite} 
                   disabled={busyAction === "add"}
                 >

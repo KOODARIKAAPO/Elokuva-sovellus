@@ -126,7 +126,7 @@ export function Home() {
             <div style={{ marginTop: "10px", textAlign: "center" }}>
               <button
                 onClick={() => setShowReviewModal(true)}
-                style={{ padding: "8px 16px", fontSize: "1rem" }}
+                className="modal-cta"
               >
                 Siirry arvosteluihin
               </button>

@@ -6,6 +6,7 @@ import {
   getGroupById,
   getGroupFavourites,
   addMovieToGroup,
+  deleteGroup,
   removeMovieFromGroup
 } from "../controllers/group_controller.js";
 
@@ -15,7 +16,7 @@ const router = Router();
 router.get("/", listGroups);
 
 // POST /groups
-router.post("/", createGroup);
+router.post("/", authRequired, createGroup);
 
 // GET /groups/:id
 router.get("/:id", getGroupById);
@@ -28,5 +29,8 @@ router.post("/:id/favourites", authRequired, addMovieToGroup);
 
 // DELETE /groups/:id/favourites/:tmdbId (remove movie from group)
 router.delete("/:id/favourites/:tmdbId", authRequired, removeMovieFromGroup);
+// DELETE /groups/:id
+router.delete("/:id", authRequired ,deleteGroup);
+
 
 export default router;

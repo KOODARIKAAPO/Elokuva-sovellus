@@ -9,6 +9,7 @@ export async function listGroups(req, res, next) {
   }
 }
 
+// Ryhmän luominen
 export async function createGroup(req, res, next) {
   try {
     const name = typeof req.body.name === "string" ? req.body.name.trim() : "";
@@ -25,6 +26,36 @@ export async function createGroup(req, res, next) {
     );
 
     return res.status(201).json(rows[0]);
+  } catch (err) {
+    return next(err);
+  }
+}
+
+// Ryhmän poistaminen
+export async function deleteGroup(req, res, next) {
+  try {
+    const groupId = Number(req.params.id);
+    const userId = req.user.id;
+
+    // Tarkista omistus
+    const { rows } = await pool.query(
+      "SELECT * FROM groups WHERE id = $1",
+      [groupId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Group not found" });
+    }
+
+    const group = rows[0];
+
+    if (group.owner_id !== userId) {
+      return res.status(403).json({ error: "Not allowed" });
+    }
+
+    await pool.query("DELETE FROM groups WHERE id = $1", [groupId]);
+
+    return res.json({ success: true });
   } catch (err) {
     return next(err);
   }
@@ -176,6 +207,7 @@ export async function removeMovieFromGroup(req, res, next) {
 export default {
   listGroups,
   createGroup,
+  deleteGroup,
   getGroupById,
   getGroupFavourites,
   addMovieToGroup,
