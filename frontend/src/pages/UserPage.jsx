@@ -110,6 +110,31 @@ useEffect(() => {
   loadMyGroups();
 }, [currentUser]);
 
+
+// Ryhmien poisto
+async function handleDeleteGroup(groupId) {
+  if (!confirm("Haluatko varmasti poistaa tämän ryhmän?")) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/groups/${groupId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(data.error || "Ryhmän poisto epäonnistui");
+    }
+
+    setMyGroups((prev) => prev.filter((g) => g.id !== groupId));
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
   // Hae TMDb-tiedot jokaiselle suosikille
   useEffect(() => {
     async function loadMovieDetails() {
@@ -564,7 +589,7 @@ useEffect(() => {
         {shareStatus && <p className={`status ${shareStatus.type}`}>{shareStatus.message}</p>}
       </section>
 
-      <section className="card">
+ <section className="card">
   <p className="eyebrow">Ryhmät</p>
   <h2>Sinun luomasi ryhmät</h2>
 
@@ -576,10 +601,28 @@ useEffect(() => {
         <div
           key={group.id}
           className="group-item"
-          onClick={() => navigate(`/groups/${group.id}`)}
-          style={{ cursor: "pointer", margin: "0.5rem 0" }}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "0.5rem 0",
+          }}
         >
-          <strong>{group.name}</strong>
+          <span
+            onClick={() => navigate(`/groups/${group.id}`)}
+            style={{ cursor: "pointer", fontWeight: "bold" }}
+          >
+            {group.name}
+          </span>
+
+          <button
+            type="button"
+            onClick={() => handleDeleteGroup(group.id)}
+            className="danger-btn"
+            style={{ marginLeft: "1rem" }}
+          >
+            Poista
+          </button>
         </div>
       ))}
     </div>

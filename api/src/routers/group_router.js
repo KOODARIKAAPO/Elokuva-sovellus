@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { listGroups, createGroup, getGroupById } from "../controllers/group_controller.js";
+import { authRequired } from "../middleware/auth_middleware.js";
+import { listGroups, createGroup, deleteGroup, getGroupById } from "../controllers/group_controller.js";
 
 const router = Router();
 
@@ -7,10 +8,13 @@ const router = Router();
 router.get("/", listGroups);
 
 // POST /groups
-router.post("/", createGroup);
+router.post("/", authRequired, createGroup);
 
 // GET /groups/:id
 router.get("/:id", getGroupById);
+
+// DELETE /groups/:id
+router.delete("/:id", authRequired ,deleteGroup);
 
 
 export default router;
