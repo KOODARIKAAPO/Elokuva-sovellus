@@ -34,12 +34,10 @@ export function Home() {
 
   return (
     <>
-      <header className="app-header">
-        <div className="header-copy">
-          <h1>ABSOLUTE CINEMA</h1>
-          <p>Tervetuloa etusivulle.</p>
-        </div>
-      </header>
+      <section className="card home-hero">
+        <h1>ABSOLUTE CINEMA</h1>
+        <p className="hint">Tervetuloa etusivulle.</p>
+      </section>
 
       <section className="view">
         <MovieCarousel
@@ -49,6 +47,24 @@ export function Home() {
           }}
         />
 
+        <Card className="search-shell">
+          <SearchBar
+            query={searchQuery}
+            onQueryChange={setSearchQuery}
+            onSearch={handleSearch}
+            onSelectMovie={setSelectedMovie}
+          />
+
+          {searchResults.length > 0 && (
+            <div className="search-results">
+              {searchResults.map((movie) => (
+                <div key={movie.id} className="search-result-item">
+                  <div
+                    onClick={() => setSelectedMovie(movie)}
+                    style={{ cursor: "pointer", fontWeight: selectedMovie?.id === movie.id ? "bold" : "normal" }}
+                  >
+                    {movie.title} ({movie.release_date?.slice(0, 4) || "n/a"})
+                  </div>
         <SearchBar
           query={searchQuery}
           onQueryChange={setSearchQuery}
@@ -72,11 +88,14 @@ export function Home() {
                 >
                   {movie.title} ({movie.release_date?.slice(0, 4) || "n/a"})
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </Card>
 
+        {selectedMovie && (
+          <Card className="selected-movie-card">
+            <MovieDetails movie={selectedMovie} onClose={() => setSelectedMovie(null)} />
         <Card title="Tervetuloa Elokuvasovellukseen">
           <p>
             Täällä voit liittyä ryhmiin. Luoda suosikkilistoja ja vaihtaa ajatuksia muiden
@@ -128,6 +147,10 @@ export function Home() {
                 Siirry arvosteluihin
               </button>
             </div>
+          </Card>
+        )}
+
+      </section>
 
             <button onClick={() => setShowMovieModal(false)} style={{ marginTop: "15px" }}>Sulje</button>
           </div>

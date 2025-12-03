@@ -23,9 +23,9 @@ export function Navbar() {
      {open && (
       /* Lisää tänne linkki, jos haluat sivun näkyvän dropdown-valikossa. Lisää route myös App.jsx -tiedostoon. */
         <div className="dropdown-content open">
-          <Link to="/">Home</Link><br/>
-          <Link to="/jgroup">Groups</Link><br/>
-          <Link to="/user">User</Link><br/>
+          <Link to="/">Etusivu</Link><br/>
+          <Link to="/jgroup">Ryhmä</Link><br/>
+          <Link to="/user">Käyttäjä</Link><br/>
           {!currentUser && (
             <>
               <Link to="/login">Kirjaudu</Link><br/>
@@ -33,7 +33,7 @@ export function Navbar() {
           )}
           {currentUser && (
             <>
-              <button className="menu-button" onClick={handleLogout}>Log Out</button><br/>
+              <button className="menu-button" onClick={handleLogout}>Kirjaudu Ulos</button><br/>
             </>
           )}
         </div>
