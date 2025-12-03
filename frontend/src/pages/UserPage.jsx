@@ -458,11 +458,8 @@ export function UserPage() {
           <div>
             <p className="eyebrow">Suosikit</p>
             <h2>Suosikkielokuvasi</h2>
-            <p className="hint">Avaa elokuvan tiedot ja poista se tarvittaessa listalta.</p>
+            <p className="hint">Selaa suosikkejasi, avaa tiedot ja poista tarvittaessa.</p>
           </div>
-          <button type="button" className="ghost-btn" onClick={() => setAccountOpen(true)}>
-            Päivitä tietoja
-          </button>
         </div>
 
       {error && <p className="status error">{error}</p>}
@@ -508,7 +505,7 @@ export function UserPage() {
       </div>
       </section>
 
-      <section className="card">
+      <section className="card share-card">
         <div className="section-header">
           <div>
             <p className="eyebrow">Jaa</p>

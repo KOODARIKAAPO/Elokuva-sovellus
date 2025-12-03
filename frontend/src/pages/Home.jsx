@@ -33,40 +33,40 @@ export function Home() {
 
   return (
     <>
-      <header className="app-header">
-        <div className="header-copy">
-          <h1>ABSOLUTE CINEMA</h1>
-          <p>Tervetuloa etusivulle.</p>
-        </div>
-      </header>
+      <section className="card home-hero">
+        <h1>ABSOLUTE CINEMA</h1>
+        <p className="hint">Tervetuloa etusivulle.</p>
+      </section>
 
       <section className="view">
         <MovieCarousel onSelectMovie={setSelectedMovie} />
 
-        <SearchBar
-          query={searchQuery}
-          onQueryChange={setSearchQuery}
-          onSearch={handleSearch}
-          onSelectMovie={setSelectedMovie}
-        />
+        <Card className="search-shell">
+          <SearchBar
+            query={searchQuery}
+            onQueryChange={setSearchQuery}
+            onSearch={handleSearch}
+            onSelectMovie={setSelectedMovie}
+          />
 
-        {searchResults.length > 0 && (
-          <div className="search-results">
-            {searchResults.map((movie) => (
-              <div key={movie.id} className="search-result-item">
-                <div
-                  onClick={() => setSelectedMovie(movie)}
-                  style={{ cursor: "pointer", fontWeight: selectedMovie?.id === movie.id ? "bold" : "normal" }}
-                >
-                  {movie.title} ({movie.release_date?.slice(0, 4) || "n/a"})
+          {searchResults.length > 0 && (
+            <div className="search-results">
+              {searchResults.map((movie) => (
+                <div key={movie.id} className="search-result-item">
+                  <div
+                    onClick={() => setSelectedMovie(movie)}
+                    style={{ cursor: "pointer", fontWeight: selectedMovie?.id === movie.id ? "bold" : "normal" }}
+                  >
+                    {movie.title} ({movie.release_date?.slice(0, 4) || "n/a"})
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </Card>
 
         {selectedMovie && (
-          <div>
+          <Card className="selected-movie-card">
             <MovieDetails movie={selectedMovie} onClose={() => setSelectedMovie(null)} />
 
             <div style={{ textAlign: "center", marginTop: "10px" }}>
@@ -77,15 +77,9 @@ export function Home() {
                 Siirry arvosteluihin
               </button>
             </div>
-          </div>
+          </Card>
         )}
 
-        <Card title="Tervetuloa Elokuvasovellukseen">
-          <p>
-            Täällä voit liittyä ryhmiin. Luoda suosikkilistoja ja vaihtaa ajatuksia muiden
-            elokuvien ystävien kanssa!
-          </p>
-        </Card>
       </section>
 
       {showReviewModal && selectedMovie && (
