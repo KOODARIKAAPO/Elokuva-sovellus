@@ -6,7 +6,7 @@ import authRouter from "./routers/auth_router.js";
 import favouriteRouter from "./routers/favourite_router.js";
 import reviewRouter from "./routers/review_router.js";
 import groupRouter from "./routers/group_router.js";
-
+import bookingRouter from "./routers/booking_router.js";
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -24,6 +24,7 @@ app.use("/auth", authRouter);
 app.use("/favourites", favouriteRouter);
 app.use("/reviews", reviewRouter);
 app.use("/groups", groupRouter);
+app.use("/booking", bookingRouter);
 
 app.listen(port, () => {
   console.log(`Server is listening port ${port}`);

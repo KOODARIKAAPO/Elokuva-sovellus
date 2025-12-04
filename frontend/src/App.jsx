@@ -10,7 +10,7 @@ import NGroup from "./pages/nGroup.jsx";
 import { AuthProvider } from "./AuthContext.jsx";
 import { SingleGroup } from "./pages/singleGroup.jsx";
 import { SharedFavourites } from "./pages/SharedFavourites.jsx";
-
+import { BookingPage } from "./pages/BookingPage.jsx";
 
 
 
@@ -29,6 +29,7 @@ function App() {
               <Route path="/ngroup" element={<NGroup />} />
               <Route path="/singlegroup" element={<SingleGroup />} />
               <Route path="/shared/:token" element={<SharedFavourites />} />
+              <Route path="/booking" element={<BookingPage />} />
             </Route>
           </Routes>
         </Router>
