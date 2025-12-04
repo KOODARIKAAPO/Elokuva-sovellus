@@ -90,3 +90,15 @@ CREATE TABLE group_message (
   message_text TEXT NOT NULL,
   sent_at TIMESTAMP DEFAULT now()
 );
+
+-- Elokuvien varaukset
+CREATE TABLE booking (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES account(id) ON DELETE CASCADE,
+  tmdb_id INT NOT NULL,
+  screening_date DATE NOT NULL,
+  seats INT[] NOT NULL, 
+  created_at TIMESTAMP DEFAULT now()
+);
+
+

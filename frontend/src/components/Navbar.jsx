@@ -32,6 +32,7 @@ export function Navbar() {
           <Link to="/">Etusivu</Link><br/>
           <Link to="/jgroup">Ryhmä</Link><br/>
           <Link to="/user">Käyttäjä</Link><br/>
+          <Link to="/booking">Varaa paikat</Link><br/>
           {!currentUser && (
             <>
               <Link to="/login">Kirjaudu</Link><br/>
