@@ -667,7 +667,6 @@ button:disabled {
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
 }
 
-/* Down to tablet: stack user hero columns and left-align actions */
 @media (max-width: 960px) {
   .user-hero {
     grid-template-columns: 1fr;
@@ -678,7 +677,6 @@ button:disabled {
   }
 }
 
-/* Small tablet and below: stack section headers and center favourite cards */
 @media (max-width: 768px) {
   .section-header {
     flex-direction: column;
@@ -709,7 +707,6 @@ button:disabled {
   }
 }
 
-/* Mobile: tighter app padding and full-width primary buttons */
 @media (max-width: 640px) {
   .app {
     width: calc(100% - 1.25rem);
@@ -730,7 +727,6 @@ button:disabled {
   }
 }
 .movie-details .close {
-  /* Add any desired styles for the close button */
 }
 
 .movie-details .movie-meta img {
@@ -804,7 +800,6 @@ button:disabled {
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Chat Section Styles */
 .chat-section {
   margin-top: 2rem;
   padding-top: 2rem;

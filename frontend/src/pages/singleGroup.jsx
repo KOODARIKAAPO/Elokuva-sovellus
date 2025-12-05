@@ -28,7 +28,6 @@ export function SingleGroup() {
     .catch(err => console.error(err))
     .finally(() => setLoading(false));
     
-    // Load messages if user is logged in
     if (token) {
       loadMessages();
     }
