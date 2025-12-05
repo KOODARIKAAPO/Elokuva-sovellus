@@ -11,6 +11,8 @@ export function SingleGroup() {
   const { token } = useAuth();
   const [group, setGroup] = useState(null);
   const [favourites, setFavourites] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -25,7 +27,30 @@ export function SingleGroup() {
     ])
     .catch(err => console.error(err))
     .finally(() => setLoading(false));
-  }, [id]);
+    
+    if (token) {
+      loadMessages();
+    }
+  }, [id, token]);
+
+  async function loadMessages() {
+    if (!token) return;
+    
+    try {
+      const response = await fetch(`${API_BASE}/groups/${id}/messages`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data);
+      }
+    } catch (err) {
+      console.error("Failed to load messages:", err);
+    }
+  }
 
   async function removeMovieFromGroup(tmdbId) {
     if (!token) {
@@ -48,6 +73,65 @@ export function SingleGroup() {
     }
     
     setTimeout(() => setStatus(null), 3000);
+  }
+
+  async function sendMessage(e) {
+    e.preventDefault();
+    
+    if (!token) {
+      setStatus("Kirjaudu sisään lähettääksesi viestejä!");
+      return;
+    }
+
+    if (!newMessage.trim()) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/groups/${id}/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ message: newMessage }),
+      });
+
+      if (response.ok) {
+        const sentMessage = await response.json();
+        setMessages([...messages, sentMessage]);
+        setNewMessage("");
+      } else {
+        setStatus("Viestin lähetys epäonnistui");
+        setTimeout(() => setStatus(null), 3000);
+      }
+    } catch (err) {
+      console.error("Failed to send message:", err);
+      setStatus("Viestin lähetys epäonnistui");
+      setTimeout(() => setStatus(null), 3000);
+    }
+  }
+
+  async function deleteMessage(messageId) {
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${API_BASE}/groups/${id}/messages/${messageId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        setMessages(messages.filter(msg => msg.id !== messageId));
+      } else {
+        setStatus("Viestin poisto epäonnistui");
+        setTimeout(() => setStatus(null), 3000);
+      }
+    } catch (err) {
+      console.error("Failed to delete message:", err);
+    }
   }
 
   if (loading) return <p>Ladataan...</p>;
@@ -75,6 +159,46 @@ export function SingleGroup() {
           </ul>
         )}
       </div>
+
+      {token && (
+        <div className="chat-section">
+          <h2>Ryhmän chat</h2>
+          <div className="chat-messages">
+            {messages.length === 0 ? (
+              <p className="no-messages">Ei viestejä</p>
+            ) : (
+              messages.map((msg) => (
+                <div key={msg.id} className="chat-message">
+                  <div className="message-header">
+                    <strong className="message-sender">{msg.sender_name}</strong>
+                    <span className="message-time">
+                      {new Date(msg.sent_at).toLocaleString('fi-FI')}
+                    </span>
+                  </div>
+                  <p className="message-text">{msg.message_text}</p>
+                  <button 
+                    onClick={() => deleteMessage(msg.id)} 
+                    className="delete-message-btn"
+                    title="Poista viesti"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+          <form onSubmit={sendMessage} className="chat-input-form">
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Kirjoita viesti..."
+              className="chat-input"
+            />
+            <button type="submit" className="send-button">Lähetä</button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
