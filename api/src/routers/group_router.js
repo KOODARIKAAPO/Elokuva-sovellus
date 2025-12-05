@@ -9,6 +9,11 @@ import {
   deleteGroup,
   removeMovieFromGroup
 } from "../controllers/group_controller.js";
+import {
+  getGroupMessages,
+  sendGroupMessage,
+  deleteGroupMessage
+} from "../controllers/message_controller.js";
 
 const router = Router();
 
@@ -29,6 +34,16 @@ router.post("/:id/favourites", authRequired, addMovieToGroup);
 
 // DELETE /groups/:id/favourites/:tmdbId (remove movie from group)
 router.delete("/:id/favourites/:tmdbId", authRequired, removeMovieFromGroup);
+
+// GET /groups/:id/messages (get all messages in a group)
+router.get("/:id/messages", authRequired, getGroupMessages);
+
+// POST /groups/:id/messages (send a message to a group)
+router.post("/:id/messages", authRequired, sendGroupMessage);
+
+// DELETE /groups/:id/messages/:messageId (delete a message)
+router.delete("/:id/messages/:messageId", authRequired, deleteGroupMessage);
+
 // DELETE /groups/:id
 router.delete("/:id", authRequired ,deleteGroup);
 
