@@ -7,7 +7,12 @@ import {
   getGroupFavourites,
   addMovieToGroup,
   deleteGroup,
-  removeMovieFromGroup
+  removeMovieFromGroup,
+  listGroupMembers,
+  requestJoin,
+  approveMember,
+  getJoinedGroups,
+  leaveGroup,
 } from "../controllers/group_controller.js";
 
 const router = Router();
@@ -15,22 +20,31 @@ const router = Router();
 // GET /groups
 router.get("/", listGroups);
 
-// POST /groups
+// ⭐ TÄRKEÄ: staattiset reitit ensin
+router.get("/joined", authRequired, getJoinedGroups);
+
+// Luo ryhmä
 router.post("/", authRequired, createGroup);
 
-// GET /groups/:id
-router.get("/:id", getGroupById);
+// Ryhmän jäsenyys
+router.post("/:id/join", authRequired, requestJoin);
+router.post("/:id/approve/:userId", authRequired, approveMember);
 
-// GET /groups/:id/favourites
+// Ryhmän suosikit
 router.get("/:id/favourites", getGroupFavourites);
-
-// POST /groups/:id/favourites (add movie to group)
 router.post("/:id/favourites", authRequired, addMovieToGroup);
-
-// DELETE /groups/:id/favourites/:tmdbId (remove movie from group)
 router.delete("/:id/favourites/:tmdbId", authRequired, removeMovieFromGroup);
-// DELETE /groups/:id
-router.delete("/:id", authRequired ,deleteGroup);
+
+// Jäsenlista
+router.get("/:id/members", authRequired, listGroupMembers);
+
+// Poista ryhmä
+router.delete("/:id", authRequired, deleteGroup);
+
+// Poistu ryhmästä
+router.delete("/:id/leave", authRequired, leaveGroup);
+
+router.get("/:id", getGroupById);
 
 
 export default router;

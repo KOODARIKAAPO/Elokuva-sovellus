@@ -29,6 +29,7 @@ export function UserPage() {
   const [shareStatus, setShareStatus] = useState(null);
   const [shareBusy, setShareBusy] = useState(false);
   const [myGroups, setMyGroups] = useState([]);
+  const [joinedGroups, setJoinedGroups] = useState([]);
 
   const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3001";
   const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -110,6 +111,23 @@ useEffect(() => {
   loadMyGroups();
 }, [currentUser]);
 
+// Hae käyttäjän liittymät ryhmät
+useEffect(() => {
+  if (!token) return;
+
+  fetch(`${API_BASE}/groups/joined`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      return res.json();
+    })
+    .then(data => setJoinedGroups(data))
+    .catch(err => console.error(err));
+}, [token]);
+
 
 // Ryhmien poisto
 async function handleDeleteGroup(groupId) {
@@ -130,6 +148,30 @@ async function handleDeleteGroup(groupId) {
     }
 
     setMyGroups((prev) => prev.filter((g) => g.id !== groupId));
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+// Poistu ryhmästä
+async function handleLeaveGroup(groupId) {
+  if (!confirm("Haluatko varmasti poistua ryhmästä?")) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/groups/${groupId}/leave`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.error || "Poistuminen epäonnistui");
+    }
+
+    setJoinedGroups((prev) => prev.filter((g) => g.id !== groupId));
+
   } catch (err) {
     alert(err.message);
   }
@@ -602,10 +644,8 @@ async function handleDeleteGroup(groupId) {
           key={group.id}
           className="group-item"
           style={{
-            display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            padding: "0.5rem 0",
           }}
         >
           <span
@@ -626,6 +666,34 @@ async function handleDeleteGroup(groupId) {
         </div>
       ))}
     </div>
+  )}
+</section>
+
+<section className="card">
+  <p className="eyebrow">Ryhmät</p>
+  <h2>Ryhmät, joihin olet liittynyt</h2>
+
+  {Array.isArray(joinedGroups) && joinedGroups.length > 0 ? (
+    joinedGroups.map(group => (
+      <div key={group.id} className="group-item">
+        <span
+          onClick={() => navigate(`/groups/${group.id}`)}
+          style={{ cursor: "pointer", fontWeight: "bold" }}
+        >
+          {group.name}
+        </span>
+
+        <button
+          className="danger-btn"
+          style={{ marginLeft: "1rem" }}
+          onClick={() => handleLeaveGroup(group.id)}
+        >
+          Poistu
+        </button>
+      </div>
+    ))
+  ) : (
+    <p>Et ole liittynyt vielä mihinkään ryhmään</p>
   )}
 </section>
 
