@@ -20,6 +20,7 @@ CREATE TABLE group_member (
   group_id  INT NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
   user_id   INT NOT NULL REFERENCES account(id) ON DELETE CASCADE,
   role      VARCHAR(50) DEFAULT 'member',
+  status    VARCHAR(20) NOT NULL DEFAULT 'approved',
   PRIMARY KEY (group_id, user_id)
 );
 

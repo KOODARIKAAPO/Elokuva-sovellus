@@ -789,11 +789,11 @@ button:disabled {
 }
 
 .group-item {
-  display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding: 0.85rem 1rem;
   border-radius: 10px;
+  display: "flex";
+  padding: "0.5rem 0",
 }
 
 .group-item:hover {
