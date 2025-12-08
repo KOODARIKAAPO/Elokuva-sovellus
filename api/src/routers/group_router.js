@@ -14,13 +14,17 @@ import {
   getJoinedGroups,
   leaveGroup,
 } from "../controllers/group_controller.js";
+import {
+  getGroupMessages,
+  sendGroupMessage,
+  deleteGroupMessage
+} from "../controllers/message_controller.js";
 
 const router = Router();
 
 // GET /groups
 router.get("/", listGroups);
 
-// ⭐ TÄRKEÄ: staattiset reitit ensin
 router.get("/joined", authRequired, getJoinedGroups);
 
 // Luo ryhmä
@@ -45,6 +49,18 @@ router.delete("/:id", authRequired, deleteGroup);
 router.delete("/:id/leave", authRequired, leaveGroup);
 
 router.get("/:id", getGroupById);
+
+// Hae viestit
+router.get("/:id/messages", authRequired, getGroupMessages);
+
+// Lähetä viesti
+router.post("/:id/messages", authRequired, sendGroupMessage);
+
+// Poista viesti
+router.delete("/:id/messages/:messageId", authRequired, deleteGroupMessage);
+
+// DELETE /groups/:id
+router.delete("/:id", authRequired ,deleteGroup);
 
 
 export default router;
