@@ -30,11 +30,11 @@ export function SingleGroup() {
         .then(data => setGroup(data)),
       fetch(`${API_BASE}/groups/${id}/favourites`)
         .then(res => res.json())
-        .then(data => setFavourites(data || []))
-  }, [id]);
-    .catch(err => console.error(err))
-    .finally(() => setLoading(false));
-    
+        .then(data => setFavourites(data || [])),
+    ])
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false));
+
     if (token) {
       loadMessages();
     }
@@ -129,7 +129,7 @@ export function SingleGroup() {
     setTimeout(() => setStatus(null), 3000);
   }
 
-    async function approve(userId) {
+  async function approve(userId) {
     const res = await fetch(`${API_BASE}/groups/${id}/approve/${userId}`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` }
@@ -138,10 +138,14 @@ export function SingleGroup() {
     if (res.ok) {
       setPendingRequests(pendingRequests.filter(r => r.user_id !== userId));
       setStatus(`Käyttäjä ${userId} hyväksytty!`);
-      setTimeout(() => setStatus(null), 3000);
     } else {
       const err = await res.json();
       setStatus(err.error || "Virhe hyväksyttäessä");
+    }
+
+    setTimeout(() => setStatus(null), 3000);
+  }
+
   async function sendMessage(e) {
     e.preventDefault();
     
