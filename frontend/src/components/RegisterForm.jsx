@@ -38,10 +38,13 @@ export default function RegisterForm({
             type="password"
             name="password"
             minLength={8}
+            pattern="(?=.*[A-Z])(?=.*[0-9]).{8,}"
+            title="Vähintään 8 merkkiä, sisältää yhden ison kirjaimen ja numeron"
             value={formData.password}
             onChange={(e) => onChange("password", e.target.value)}
             required
           />
+          <small>Vähintään 8 merkkiä, sisältää yhden ison kirjaimen ja numeron.</small>
         </label>
         <button type="submit" disabled={disabled}>
           {disabled ? "Luodaan..." : "Luo käyttäjä"}

@@ -8,26 +8,33 @@ const TMDB_BASE = import.meta.env.VITE_TMDB_BASE_URL || "https://api.themoviedb.
 
 export function SingleGroup() {
   const { id } = useParams();
-  const { token } = useAuth();
+  const { token, currentUser, loadingUser } = useAuth();
+
   const [group, setGroup] = useState(null);
   const [favourites, setFavourites] = useState([]);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isMember, setIsMember] = useState(false);
+  const [isPending, setIsPending] = useState(false);
+  const [pendingRequests, setPendingRequests] = useState([]);
 
+  // Lataa ryhmän tiedot ja suosikit
   useEffect(() => {
+    setLoading(true);
+
     Promise.all([
       fetch(`${API_BASE}/groups/${id}`)
         .then(res => res.json())
         .then(data => setGroup(data)),
       fetch(`${API_BASE}/groups/${id}/favourites`)
         .then(res => res.json())
-        .then(data => setFavourites(data || []))
+        .then(data => setFavourites(data || [])),
     ])
-    .catch(err => console.error(err))
-    .finally(() => setLoading(false));
-    
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false));
+
     if (token) {
       loadMessages();
     }
@@ -52,6 +59,53 @@ export function SingleGroup() {
     }
   }
 
+  // Tarkista jäsenyys
+  useEffect(() => {
+    if (!currentUser || !token) return;
+
+    fetch(`${API_BASE}/groups/${id}/members`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(members => {
+        const me = members.find(m => m.user_id === currentUser.id);
+        if (me?.status === "approved") setIsMember(true);
+        if (me?.status === "pending") setIsPending(true);
+
+        if (group?.owner_id === currentUser.id) {
+        setPendingRequests(members.filter(m => m.status === "pending"));
+      }
+    })
+    .catch(err => console.error(err));
+  }, [id, token, currentUser, group]);
+
+  // Lähetä liittymispyyntö
+  async function requestJoin() {
+    if (!token) {
+      setStatus("Kirjaudu sisään liittyäksesi ryhmään");
+      return;
+    }
+
+    const res = await fetch(`${API_BASE}/groups/${id}/join`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      setStatus(err.error || "Virhe liittymispyynnössä");
+      return;
+    }
+
+    setStatus("Liittymispyyntö lähetetty!");
+    setIsPending(true);
+    setTimeout(() => setStatus(null), 3000);
+  }
+
+  // Poista elokuva ryhmästä
   async function removeMovieFromGroup(tmdbId) {
     if (!token) {
       setStatus("Kirjaudu sisään poistaaksesi elokuvan!");
@@ -66,12 +120,29 @@ export function SingleGroup() {
     });
 
     if (!response.ok) {
-      setStatus("Poisto epäonnistui");
+      setStatus("Sinun täytyy olla ryhmän jäsen poistaaksesi elokuvan");
     } else {
       setStatus("Elokuva poistettu ryhmästä");
       setFavourites(favourites.filter(fav => fav.tmdb_id !== tmdbId));
     }
-    
+
+    setTimeout(() => setStatus(null), 3000);
+  }
+
+  async function approve(userId) {
+    const res = await fetch(`${API_BASE}/groups/${id}/approve/${userId}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (res.ok) {
+      setPendingRequests(pendingRequests.filter(r => r.user_id !== userId));
+      setStatus(`Käyttäjä ${userId} hyväksytty!`);
+    } else {
+      const err = await res.json();
+      setStatus(err.error || "Virhe hyväksyttäessä");
+    }
+
     setTimeout(() => setStatus(null), 3000);
   }
 
@@ -141,7 +212,28 @@ export function SingleGroup() {
     <div className="single-group">
       <h1>{group.name}</h1>
 
+      {!isMember && currentUser && currentUser.id !== group.owner_id && (
+        <button 
+          onClick={requestJoin} 
+          className="join-button"
+          disabled={isPending}
+        >
+          {isPending ? "Liittymispyyntö lähetetty" : "Liity ryhmään"}
+        </button>
+      )}
+
       {status && <p className="status-message">{status}</p>}
+
+      {currentUser?.id === group.owner_id && pendingRequests.length > 0 && ( 
+        <div className="pending-requests"> <h3>Liittymispyynnöt:</h3>
+         <ul>
+           {pendingRequests.map(req => (
+            <li key={req.user_id}>
+               Käyttäjä {req.user_id}
+                <button onClick={() => approve(req.user_id)}>Hyväksy</button>
+              </li> ))}
+            </ul>
+            </div> )}
 
       <div>
         <h2>Ryhmän suosikkielokuvat</h2>
@@ -149,7 +241,7 @@ export function SingleGroup() {
           <p>Ei vielä elokuvia</p>
         ) : (
           <ul className="group-movie-list">
-            {favourites.map((fav) => (
+            {favourites.map(fav => (
               <GroupMovieItem
                 key={fav.tmdb_id}
                 tmdbId={fav.tmdb_id}

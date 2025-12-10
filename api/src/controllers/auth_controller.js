@@ -13,8 +13,19 @@ import { hashPassword, verifyPassword } from "../utils/password.js";
 import jwt from 'jsonwebtoken';
 
 const MIN_PASSWORD_LENGTH = 8;
+const PASSWORD_POLICY_MESSAGE = `Password should be at least ${MIN_PASSWORD_LENGTH} characters long and include at least one uppercase letter and one number`;
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
+
+//Salasanan vahvuuden tarkistus
+function isPasswordStrong(password) {
+  return (
+    typeof password === "string" &&
+    password.length >= MIN_PASSWORD_LENGTH &&
+    /[A-Z]/.test(password) &&
+    /\d/.test(password)
+  );
+}
 
 //Functio joka luo JWT tokenin
 function createToken(account) {
@@ -44,10 +55,8 @@ export async function register(req, res, next) {
       return res.status(400).json({ error: "Please provide a valid email address" });
     }
 
-    if (password.length < MIN_PASSWORD_LENGTH) {
-      return res
-        .status(400)
-        .json({ error: `Password should be at least ${MIN_PASSWORD_LENGTH} characters long` });
+    if (!isPasswordStrong(password)) {
+      return res.status(400).json({ error: PASSWORD_POLICY_MESSAGE });
     }
 
     const hashedPassword = await hashPassword(password);
@@ -186,10 +195,8 @@ export async function updatePassword(req, res, next) {
       return res.status(400).json({ error: "Current password and new password are required" });
     }
 
-    if (newPassword.length < MIN_PASSWORD_LENGTH) {
-      return res
-        .status(400)
-        .json({ error: `Password should be at least ${MIN_PASSWORD_LENGTH} characters long` });
+    if (!isPasswordStrong(newPassword)) {
+      return res.status(400).json({ error: PASSWORD_POLICY_MESSAGE });
     }
 
     const account = await findAccountById(userId);

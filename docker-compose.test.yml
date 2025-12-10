@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  testdb:
+    image: postgres:16
+    container_name: postgres_test_db
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: testdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgtestdata:/var/lib/postgresql/data
+      - ./movie.sql:/docker-entrypoint-initdb.d/movie.sql:ro
+
+volumes:
+  pgtestdata:

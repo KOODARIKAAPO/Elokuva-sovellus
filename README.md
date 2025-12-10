@@ -1,6 +1,19 @@
-<h1>Docker Fullstack esimerkki</h1>
+<h1>Docker Fullstack esimerkki — Elokuvasovellus</h1>
 
-Tässä esimerkissä rakennetaan sovellus, jossa on Express.js REST API + Postgres tietokanta + React sovellus, joita ajetaan Dockerissa. Sekä API, että React sovellus päivittyvät heti kun muutoksia tehdään.
+<p>Tässä esimerkissä rakennetaan elokuvasovellus, jossa voit:</p>
+
+<ul>
+  <li>nähdä tällä hetkellä elokuvateattereissa olevat elokuvat</li>
+  <li>hakea elokuvia ja suodattaa hakutuloksia</li>
+  <li>liittyä ryhmiin, keskustella muiden kanssa ja jakaa mielipiteitä</li>
+  <li>antaa ja lukea arvosteluja</li>
+  <li>lisätä suosikkielokuvia omaan profiiliin</li>
+</ul>
+
+<p>
+Sovellus koostuu Express.js REST API:sta, Postgres-tietokannasta sekä React-frontendista. Kaikki palvelut ajetaan Dockerissa, ja sekä API että frontend päivittyvät automaattisesti muutosten yhteydessä.
+</p>
+
 
 <h2>Asennus</h2>
 <ol>

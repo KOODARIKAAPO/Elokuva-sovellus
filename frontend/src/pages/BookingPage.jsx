@@ -4,33 +4,50 @@ import { useAuth } from "../AuthContext.jsx";
 export function BookingPage() {
   const { currentUser } = useAuth();
 
-  // Mock dataa
-  const mockScreenings = [
-    {
-      id: 1,
-      title: "The Matrix Resurrections",
-      poster: "https://image.tmdb.org/t/p/w200/qX4k2c89w4d6sF0xW8jC8uBqa1J.jpg",
-      date: "2025-12-05",
-      time: "18:00",
-      seatsTaken: [3, 4, 7, 15, 22, 28],
-    },
-    {
-      id: 2,
-      title: "Avatar: The Way of Water",
-      poster: "https://image.tmdb.org/t/p/w200/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg",
-      date: "2025-12-05",
-      time: "20:30",
-      seatsTaken: [1, 2, 8, 12, 18, 19],
-    },
-    {
-      id: 3,
-      title: "Spider-Man: Across the Spider-Verse",
-      poster: "https://image.tmdb.org/t/p/w200/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg",
-      date: "2025-12-06",
-      time: "17:00",
-      seatsTaken: [5, 6, 10, 14, 20, 21],
-    },
-  ];
+// Mock dataa
+const mockScreenings = [
+  {
+    id: 17,
+    title: "John Wick: Chapter 4",
+    poster: "https://image.tmdb.org/t/p/w200/vZloFAK7NmvMGKE7VkF5UHaz0I.jpg",
+    date: "2025-12-17",
+    time: "18:00",
+    seatsTaken: [4, 7, 11, 20, 25, 31],
+  },
+  {
+    id: 4,
+    title: "Wonka",
+    poster: "https://image.tmdb.org/t/p/w200/qhb1qOilapbapxWQn9jtRCMwXJF.jpg",
+    date: "2025-12-18",
+    time: "20:00",
+    seatsTaken: [6, 7, 13, 14, 20, 31],
+  },
+  {
+    id: 5,
+    title: "Guardians of the Galaxy Vol. 3",
+    poster: "https://image.tmdb.org/t/p/w200/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg",
+    date: "2025-12-19",
+    time: "18:30",
+    seatsTaken: [4, 5, 18, 22, 23, 30],
+  },
+  {
+    id: 6,
+    title: "Barbie",
+    poster: "https://image.tmdb.org/t/p/w200/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg",
+    date: "2025-12-20",
+    time: "19:00",
+    seatsTaken: [1, 3, 10, 11, 17, 26],
+  },
+  {
+    id: 7,
+    title: "The Batman",
+    poster: "https://image.tmdb.org/t/p/w200/74xTEgt7R36Fpooo50r9T25onhq.jpg",
+    date: "2025-12-21",
+    time: "21:00",
+    seatsTaken: [2, 6, 15, 19, 24, 32],
+  }
+];
+
 
   const [screenings, setScreenings] = useState([]);
   const [selectedScreening, setSelectedScreening] = useState(null);

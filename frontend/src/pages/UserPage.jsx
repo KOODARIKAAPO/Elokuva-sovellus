@@ -29,10 +29,15 @@ export function UserPage() {
   const [shareStatus, setShareStatus] = useState(null);
   const [shareBusy, setShareBusy] = useState(false);
   const [myGroups, setMyGroups] = useState([]);
+  const [joinedGroups, setJoinedGroups] = useState([]);
 
   const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3001";
   const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
   const TMDB_BASE_URL = import.meta.env.VITE_TMDB_BASE_URL || "https://api.themoviedb.org/3";
+  const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*[0-9]).{8,}$/;
+  const PASSWORD_PATTERN = PASSWORD_REGEX.source;
+  const PASSWORD_REQUIREMENTS =
+    "Salasanan tulee olla vähintään 8 merkkiä ja sisältää vähintään yhden ison kirjaimen sekä numeron.";
 
   // Alusta profiili
   useEffect(() => {
@@ -110,6 +115,23 @@ useEffect(() => {
   loadMyGroups();
 }, [currentUser]);
 
+// Hae käyttäjän liittymät ryhmät
+useEffect(() => {
+  if (!token) return;
+
+  fetch(`${API_BASE}/groups/joined`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      return res.json();
+    })
+    .then(data => setJoinedGroups(data))
+    .catch(err => console.error(err));
+}, [token]);
+
 
 // Ryhmien poisto
 async function handleDeleteGroup(groupId) {
@@ -130,6 +152,30 @@ async function handleDeleteGroup(groupId) {
     }
 
     setMyGroups((prev) => prev.filter((g) => g.id !== groupId));
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+// Poistu ryhmästä
+async function handleLeaveGroup(groupId) {
+  if (!confirm("Haluatko varmasti poistua ryhmästä?")) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/groups/${groupId}/leave`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.error || "Poistuminen epäonnistui");
+    }
+
+    setJoinedGroups((prev) => prev.filter((g) => g.id !== groupId));
+
   } catch (err) {
     alert(err.message);
   }
@@ -291,6 +337,11 @@ async function handleDeleteGroup(groupId) {
       return;
     }
 
+    if (!PASSWORD_REGEX.test(passwordForm.newPassword)) {
+      setPasswordStatus({ type: "error", message: PASSWORD_REQUIREMENTS });
+      return;
+    }
+
     setBusyAction("password");
     try {
       const res = await fetch(`${API_BASE}/auth/me/password`, {
@@ -446,6 +497,8 @@ async function handleDeleteGroup(groupId) {
                   <input
                     type="password"
                     minLength={8}
+                    pattern={PASSWORD_PATTERN}
+                    title={PASSWORD_REQUIREMENTS}
                     value={passwordForm.newPassword}
                     onChange={(e) =>
                       setPasswordForm((f) => ({ ...f, newPassword: e.target.value }))
@@ -458,6 +511,8 @@ async function handleDeleteGroup(groupId) {
                   <input
                     type="password"
                     minLength={8}
+                    pattern={PASSWORD_PATTERN}
+                    title={PASSWORD_REQUIREMENTS}
                     value={passwordForm.confirmPassword}
                     onChange={(e) =>
                       setPasswordForm((f) => ({ ...f, confirmPassword: e.target.value }))
@@ -465,6 +520,7 @@ async function handleDeleteGroup(groupId) {
                     required
                   />
                 </label>
+                <p className="hint">{PASSWORD_REQUIREMENTS}</p>
                 <button type="submit" disabled={busyAction === "password"}>
                   {busyAction === "password" ? "Vaihdetaan..." : "Vaihda salasana"}
                 </button>
@@ -602,10 +658,8 @@ async function handleDeleteGroup(groupId) {
           key={group.id}
           className="group-item"
           style={{
-            display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            padding: "0.5rem 0",
           }}
         >
           <span
@@ -626,6 +680,34 @@ async function handleDeleteGroup(groupId) {
         </div>
       ))}
     </div>
+  )}
+</section>
+
+<section className="card">
+  <p className="eyebrow">Ryhmät</p>
+  <h2>Ryhmät, joihin olet liittynyt</h2>
+
+  {Array.isArray(joinedGroups) && joinedGroups.length > 0 ? (
+    joinedGroups.map(group => (
+      <div key={group.id} className="group-item">
+        <span
+          onClick={() => navigate(`/groups/${group.id}`)}
+          style={{ cursor: "pointer", fontWeight: "bold" }}
+        >
+          {group.name}
+        </span>
+
+        <button
+          className="danger-btn"
+          style={{ marginLeft: "1rem" }}
+          onClick={() => handleLeaveGroup(group.id)}
+        >
+          Poistu
+        </button>
+      </div>
+    ))
+  ) : (
+    <p>Et ole liittynyt vielä mihinkään ryhmään</p>
   )}
 </section>
 
