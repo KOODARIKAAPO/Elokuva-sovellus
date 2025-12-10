@@ -1,5 +1,5 @@
 <h1>Docker Fullstack esimerkki — Elokuvasovellus</h1>
-Tässä esimerkissä rakennetaan elokuvasovellus, jossa voit:<br/>
+Tässä esimerkissä rakennetaan elokuvasovellus, jossa voit:<br>
 
   <li>nähdä tällä hetkellä elokuvateattereissa olevat elokuvat
 
