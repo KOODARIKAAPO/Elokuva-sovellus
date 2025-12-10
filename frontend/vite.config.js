@@ -7,7 +7,8 @@ export default defineConfig(() => {
   return {
     plugins: [react()],
     server: {
-      port,
+      allowedHosts: ['localhost', 'elokuva-sovellus-front.onrender.com'],
+      port: 3000,
       host: true,
     },
   };
