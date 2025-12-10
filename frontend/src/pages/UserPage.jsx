@@ -34,6 +34,10 @@ export function UserPage() {
   const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3001";
   const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
   const TMDB_BASE_URL = import.meta.env.VITE_TMDB_BASE_URL || "https://api.themoviedb.org/3";
+  const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*[0-9]).{8,}$/;
+  const PASSWORD_PATTERN = PASSWORD_REGEX.source;
+  const PASSWORD_REQUIREMENTS =
+    "Salasanan tulee olla vähintään 8 merkkiä ja sisältää vähintään yhden ison kirjaimen sekä numeron.";
 
   // Alusta profiili
   useEffect(() => {
@@ -333,6 +337,11 @@ async function handleLeaveGroup(groupId) {
       return;
     }
 
+    if (!PASSWORD_REGEX.test(passwordForm.newPassword)) {
+      setPasswordStatus({ type: "error", message: PASSWORD_REQUIREMENTS });
+      return;
+    }
+
     setBusyAction("password");
     try {
       const res = await fetch(`${API_BASE}/auth/me/password`, {
@@ -488,6 +497,8 @@ async function handleLeaveGroup(groupId) {
                   <input
                     type="password"
                     minLength={8}
+                    pattern={PASSWORD_PATTERN}
+                    title={PASSWORD_REQUIREMENTS}
                     value={passwordForm.newPassword}
                     onChange={(e) =>
                       setPasswordForm((f) => ({ ...f, newPassword: e.target.value }))
@@ -500,6 +511,8 @@ async function handleLeaveGroup(groupId) {
                   <input
                     type="password"
                     minLength={8}
+                    pattern={PASSWORD_PATTERN}
+                    title={PASSWORD_REQUIREMENTS}
                     value={passwordForm.confirmPassword}
                     onChange={(e) =>
                       setPasswordForm((f) => ({ ...f, confirmPassword: e.target.value }))
@@ -507,6 +520,7 @@ async function handleLeaveGroup(groupId) {
                     required
                   />
                 </label>
+                <p className="hint">{PASSWORD_REQUIREMENTS}</p>
                 <button type="submit" disabled={busyAction === "password"}>
                   {busyAction === "password" ? "Vaihdetaan..." : "Vaihda salasana"}
                 </button>
