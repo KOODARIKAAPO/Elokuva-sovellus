@@ -8,7 +8,7 @@ const TMDB_BASE = import.meta.env.VITE_TMDB_BASE_URL || "https://api.themoviedb.
 
 export function SingleGroup() {
   const { id } = useParams();
-  const { token, currentUser, loadingUser } = useAuth();
+  const { token, currentUser } = useAuth();
 
   const [group, setGroup] = useState(null);
   const [favourites, setFavourites] = useState([]);
@@ -16,42 +16,74 @@ export function SingleGroup() {
   const [newMessage, setNewMessage] = useState("");
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [members, setMembers] = useState([]);
   const [isMember, setIsMember] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [pendingRequests, setPendingRequests] = useState([]);
 
-  // Lataa ryhmän tiedot ja suosikit
+  // Lataa ryhmä, suosikit ja viestit
   useEffect(() => {
-    setLoading(true);
+  if (!token) {
+    setLoading(false);
+    return;
+  }
 
-    Promise.all([
-      fetch(`${API_BASE}/groups/${id}`)
-        .then(res => res.json())
-        .then(data => setGroup(data)),
-      fetch(`${API_BASE}/groups/${id}/favourites`)
-        .then(res => res.json())
-        .then(data => setFavourites(data || [])),
-    ])
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false));
+  setLoading(true);
 
-    if (token) {
-      loadMessages();
-    }
-  }, [id, token]);
+  Promise.all([
+    fetch(`${API_BASE}/groups/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to fetch group");
+        return res.json();
+      })
+      .then(data => setGroup(data)),
 
+    fetch(`${API_BASE}/groups/${id}/favourites`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to fetch favourites");
+        return res.json();
+      })
+      .then(data => setFavourites(data || [])),
+  ])
+  .catch(err => console.error(err))
+  .finally(() => setLoading(false));
+
+  loadMessages();
+}, [id, token]);
+
+useEffect(() => {
+  if (!token || !group) return;
+
+  fetch(`${API_BASE}/groups/${id}/members`, { headers: { Authorization: `Bearer ${token}` } })
+    .then(res => res.json())
+    .then(data => {
+      const memberList = data || [];
+
+      if (group.owner_id && !memberList.some(m => m.user_id === group.owner_id)) {
+        memberList.push({
+          user_id: group.owner_id,
+          username: group.owner_name || "Omistaja",
+          status: "owner",
+          role: "owner",
+        });
+      }
+
+      setMembers(memberList);
+    })
+    .catch(err => console.error("Failed to fetch members:", err));
+
+}, [id, token, group]);
+
+  // Hae viestit
   async function loadMessages() {
     if (!token) return;
-    
+
     try {
-      const response = await fetch(`${API_BASE}/groups/${id}/messages`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await fetch(`${API_BASE}/groups/${id}/messages`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-      
-      if (response.ok) {
-        const data = await response.json();
+      if (res.ok) {
+        const data = await res.json();
         setMessages(data);
       }
     } catch (err) {
@@ -59,51 +91,53 @@ export function SingleGroup() {
     }
   }
 
-  // Tarkista jäsenyys
   useEffect(() => {
-    if (!currentUser || !token) return;
+    if (!token || !currentUser || !group) return;
 
-    fetch(`${API_BASE}/groups/${id}/members`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(members => {
+    const fetchMembership = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/groups/${id}/members`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error("Failed to fetch members");
+        const members = await res.json();
+
         const me = members.find(m => m.user_id === currentUser.id);
-        if (me?.status === "approved") setIsMember(true);
-        if (me?.status === "pending") setIsPending(true);
+        setIsMember(me?.status === "approved");
+        setIsPending(me?.status === "pending");
 
-        if (group?.owner_id === currentUser.id) {
-        setPendingRequests(members.filter(m => m.status === "pending"));
+        if (group.owner_id === currentUser.id) {
+          setPendingRequests(members.filter(m => m.status === "pending"));
+        }
+      } catch (err) {
+        console.error(err);
       }
-    })
-    .catch(err => console.error(err));
+    };
+
+    fetchMembership(); 
+    const interval = setInterval(fetchMembership, 3000);
+
+    return () => clearInterval(interval);
   }, [id, token, currentUser, group]);
 
-  // Lähetä liittymispyyntö
-  async function requestJoin() {
-    if (!token) {
-      setStatus("Kirjaudu sisään liittyäksesi ryhmään");
-      return;
-    }
-
-    const res = await fetch(`${API_BASE}/groups/${id}/join`, {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      }
+  // Poista jäsen
+  async function removeMember(userId) {
+  try {
+    const res = await fetch(`${API_BASE}/groups/${id}/members/${userId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
     });
 
-    if (!res.ok) {
+    if (res.ok) {
+      setMembers(members.filter(m => m.user_id !== userId));
+    } else {
       const err = await res.json();
-      setStatus(err.error || "Virhe liittymispyynnössä");
-      return;
+      console.error(err.error || "Failed to remove member");
     }
-
-    setStatus("Liittymispyyntö lähetetty!");
-    setIsPending(true);
-    setTimeout(() => setStatus(null), 3000);
+  } catch (err) {
+    console.error(err);
   }
+}
 
   // Poista elokuva ryhmästä
   async function removeMovieFromGroup(tmdbId) {
@@ -112,64 +146,89 @@ export function SingleGroup() {
       return;
     }
 
-    const response = await fetch(`${API_BASE}/groups/${id}/favourites/${tmdbId}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    try {
+      const res = await fetch(`${API_BASE}/groups/${id}/favourites/${tmdbId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-    if (!response.ok) {
-      setStatus("Sinun täytyy olla ryhmän jäsen poistaaksesi elokuvan");
-    } else {
-      setStatus("Elokuva poistettu ryhmästä");
-      setFavourites(favourites.filter(fav => fav.tmdb_id !== tmdbId));
+      if (!res.ok) {
+        setStatus("Sinun täytyy olla ryhmän jäsen poistaaksesi elokuvan");
+      } else {
+        setFavourites(favourites.filter(fav => fav.tmdb_id !== tmdbId));
+        setStatus("Elokuva poistettu ryhmästä");
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus("Poisto epäonnistui");
+    } finally {
+      setTimeout(() => setStatus(null), 3000);
     }
-
-    setTimeout(() => setStatus(null), 3000);
   }
 
+  // Hyväksy liittymispyyntö
   async function approve(userId) {
-    const res = await fetch(`${API_BASE}/groups/${id}/approve/${userId}`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    try {
+      const res = await fetch(`${API_BASE}/groups/${id}/approve/${userId}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-    if (res.ok) {
-      setPendingRequests(pendingRequests.filter(r => r.user_id !== userId));
-      setStatus(`Käyttäjä ${userId} hyväksytty!`);
-    } else {
-      const err = await res.json();
-      setStatus(err.error || "Virhe hyväksyttäessä");
+      if (res.ok) {
+        setPendingRequests(pendingRequests.filter(r => r.user_id !== userId));
+        setStatus(`Käyttäjä ${userId} hyväksytty!`);
+      } else {
+        const err = await res.json();
+        setStatus(err.error || "Virhe hyväksyttäessä");
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus("Virhe hyväksyttäessä");
+    } finally {
+      setTimeout(() => setStatus(null), 3000);
     }
-
-    setTimeout(() => setStatus(null), 3000);
   }
 
+  // Hylkää liittymispyyntö
+  async function reject(userId) {
+    try {
+      const res = await fetch(`${API_BASE}/groups/${id}/reject/${userId}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        setPendingRequests(pendingRequests.filter(r => r.user_id !== userId));
+        setStatus(`Käyttäjä ${userId} hylätty!`);
+      } else {
+        const err = await res.json();
+        setStatus(err.error || "Virhe hylättäessä");
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus("Virhe hylättäessä käyttäjää");
+    } finally {
+      setTimeout(() => setStatus(null), 3000);
+    }
+  }
+
+  // Lähetä viesti
   async function sendMessage(e) {
     e.preventDefault();
-    
-    if (!token) {
-      setStatus("Kirjaudu sisään lähettääksesi viestejä!");
-      return;
-    }
-
-    if (!newMessage.trim()) {
-      return;
-    }
+    if (!token || !newMessage.trim()) return;
 
     try {
-      const response = await fetch(`${API_BASE}/groups/${id}/messages`, {
+      const res = await fetch(`${API_BASE}/groups/${id}/messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ message: newMessage }),
+        body: JSON.stringify({ message: newMessage })
       });
 
-      if (response.ok) {
-        const sentMessage = await response.json();
+      if (res.ok) {
+        const sentMessage = await res.json();
         setMessages([...messages, sentMessage]);
         setNewMessage("");
       } else {
@@ -177,31 +236,28 @@ export function SingleGroup() {
         setTimeout(() => setStatus(null), 3000);
       }
     } catch (err) {
-      console.error("Failed to send message:", err);
+      console.error(err);
       setStatus("Viestin lähetys epäonnistui");
       setTimeout(() => setStatus(null), 3000);
     }
   }
 
+  // Poista viesti
   async function deleteMessage(messageId) {
     if (!token) return;
-
     try {
-      const response = await fetch(`${API_BASE}/groups/${id}/messages/${messageId}`, {
+      const res = await fetch(`${API_BASE}/groups/${id}/messages/${messageId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` }
       });
 
-      if (response.ok) {
-        setMessages(messages.filter(msg => msg.id !== messageId));
-      } else {
-        setStatus("Viestin poisto epäonnistui");
-        setTimeout(() => setStatus(null), 3000);
-      }
+      if (res.ok) setMessages(messages.filter(msg => msg.id !== messageId));
+      else setStatus("Viestin poisto epäonnistui");
     } catch (err) {
-      console.error("Failed to delete message:", err);
+      console.error(err);
+      setStatus("Viestin poisto epäonnistui");
+    } finally {
+      setTimeout(() => setStatus(null), 3000);
     }
   }
 
@@ -211,42 +267,63 @@ export function SingleGroup() {
   return (
     <div className="single-group">
       <h1>{group.name}</h1>
-
-      {!isMember && currentUser && currentUser.id !== group.owner_id && (
-        <button 
-          onClick={requestJoin} 
-          className="join-button"
-          disabled={isPending}
-        >
-          {isPending ? "Liittymispyyntö lähetetty" : "Liity ryhmään"}
-        </button>
-      )}
-
       {status && <p className="status-message">{status}</p>}
 
-      {currentUser?.id === group.owner_id && pendingRequests.length > 0 && ( 
-        <div className="pending-requests"> <h3>Liittymispyynnöt:</h3>
-         <ul>
-           {pendingRequests.map(req => (
-            <li key={req.user_id}>
-               Käyttäjä {req.user_id}
-                <button onClick={() => approve(req.user_id)}>Hyväksy</button>
-              </li> ))}
-            </ul>
-            </div> )}
+      {currentUser?.id === group.owner_id && pendingRequests.length > 0 && (
+        <div className="pending-requests">
+  <h3>Liittymispyynnöt:</h3>
+  <ul>
+    {pendingRequests.map(req => (
+      <li key={req.user_id}>
+        {req.username || `Käyttäjä ${req.user_id}`} 
+        <button onClick={() => approve(req.user_id)}>Hyväksy</button>
+        <button onClick={() => reject(req.user_id)} style={{ marginLeft: "5px" }}>
+          Hylkää
+        </button>
+      </li>
+    ))}
+  </ul>
+</div>
+      )}
+
+<div className="member-card">
+  <h2>Ryhmän jäsenet</h2>
+
+  {members.length === 0 ? (
+    <p>Ei jäseniä</p>
+  ) : (
+    <ul className="member-list">
+  {members
+    .filter(m => m.status === "approved" || m.status === "owner")
+    .map(member => (
+      <li key={member.user_id} className="member-item">
+        {member.username || `Käyttäjä ${member.user_id}`}
+        {member.user_id === group?.owner_id && <span className="owner-tag"> (Omistaja) </span>}
+
+        {currentUser?.id === group?.owner_id && member.user_id !== group?.owner_id && (
+          <button
+     onClick={() => {
+    const confirmed = window.confirm(`Haluatko varmasti poistaa jäsenen ${member.username}?`);
+    if (confirmed) {
+      removeMember(member.user_id);
+    }
+  }}
+>
+  Poista jäsen
+</button>
+        )}
+      </li>
+    ))}
+</ul>
+  )}
+</div>
 
       <div>
         <h2>Ryhmän suosikkielokuvat</h2>
-        {favourites.length === 0 ? (
-          <p>Ei vielä elokuvia</p>
-        ) : (
+        {favourites.length === 0 ? <p>Ei vielä elokuvia</p> : (
           <ul className="group-movie-list">
             {favourites.map(fav => (
-              <GroupMovieItem
-                key={fav.tmdb_id}
-                tmdbId={fav.tmdb_id}
-                onRemove={removeMovieFromGroup}
-              />
+              <GroupMovieItem key={fav.tmdb_id} tmdbId={fav.tmdb_id} onRemove={removeMovieFromGroup} />
             ))}
           </ul>
         )}
@@ -256,28 +333,16 @@ export function SingleGroup() {
         <div className="chat-section">
           <h2>Ryhmän chat</h2>
           <div className="chat-messages">
-            {messages.length === 0 ? (
-              <p className="no-messages">Ei viestejä</p>
-            ) : (
-              messages.map((msg) => (
-                <div key={msg.id} className="chat-message">
-                  <div className="message-header">
-                    <strong className="message-sender">{msg.sender_name}</strong>
-                    <span className="message-time">
-                      {new Date(msg.sent_at).toLocaleString('fi-FI')}
-                    </span>
-                  </div>
-                  <p className="message-text">{msg.message_text}</p>
-                  <button 
-                    onClick={() => deleteMessage(msg.id)} 
-                    className="delete-message-btn"
-                    title="Poista viesti"
-                  >
-                    ×
-                  </button>
+            {messages.length === 0 ? <p className="no-messages">Ei viestejä</p> : messages.map(msg => (
+              <div key={msg.id} className="chat-message">
+                <div className="message-header">
+                  <strong>{msg.sender_name}</strong>
+                  <span>{new Date(msg.sent_at).toLocaleString('fi-FI')}</span>
                 </div>
-              ))
-            )}
+                <p>{msg.message_text}</p>
+                <button onClick={() => deleteMessage(msg.id)} title="Poista viesti">×</button>
+              </div>
+            ))}
           </div>
           <form onSubmit={sendMessage} className="chat-input-form">
             <input
@@ -285,9 +350,8 @@ export function SingleGroup() {
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Kirjoita viesti..."
-              className="chat-input"
             />
-            <button type="submit" className="send-button">Lähetä</button>
+            <button type="submit">Lähetä</button>
           </form>
         </div>
       )}
@@ -295,6 +359,7 @@ export function SingleGroup() {
   );
 }
 
+// Komponentti yksittäiselle elokuvalle
 function GroupMovieItem({ tmdbId, onRemove }) {
   const [movie, setMovie] = useState(null);
 
@@ -310,19 +375,13 @@ function GroupMovieItem({ tmdbId, onRemove }) {
   return (
     <li className="group-movie-item">
       <div className="group-movie-left">
-        {movie.poster_path && (
-          <img
-            src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`}
-            alt={movie.title}
-            className="group-movie-poster"
-          />
-        )}
+        {movie.poster_path && <img src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`} alt={movie.title} />}
         <div>
           <strong>{movie.title}</strong>
-          {movie.release_date && <p className="release-year">{movie.release_date.slice(0, 4)}</p>}
+          {movie.release_date && <p>{movie.release_date.slice(0, 4)}</p>}
         </div>
       </div>
-      <button onClick={() => onRemove(tmdbId)} className="remove-button">Poista</button>
+      <button onClick={() => onRemove(tmdbId)}>Poista</button>
     </li>
   );
 }
