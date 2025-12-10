@@ -2,15 +2,15 @@
 
 Tässä esimerkissä rakennetaan elokuvasovellus, jossa voit:
 
-nähdä tällä hetkellä elokuvateattereissa olevat elokuvat
+-nähdä tällä hetkellä elokuvateattereissa olevat elokuvat
 
-hakea elokuvia ja suodattaa hakutuloksia
+-hakea elokuvia ja suodattaa hakutuloksia
 
-liittyä ryhmiin, keskustella muiden kanssa ja jakaa mielipiteitä
+-liittyä ryhmiin, keskustella muiden kanssa ja jakaa mielipiteitä
 
-antaa ja lukea arvosteluja
+-antaa ja lukea arvosteluja
 
-lisätä suosikkielokuvia omaan profiiliin
+-lisätä suosikkielokuvia omaan profiiliin
 
 Sovellus koostuu Express.js REST API:sta, Postgres-tietokannasta sekä React-frontendista. Kaikki palvelut ajetaan Dockerissa, ja sekä API että frontend päivittyvät automaattisesti muutosten yhteydessä.
 
