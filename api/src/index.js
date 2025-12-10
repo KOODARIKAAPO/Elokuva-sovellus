@@ -25,6 +25,12 @@ app.use("/favourites", favouriteRouter);
 app.use("/reviews", reviewRouter);
 app.use("/groups", groupRouter);
 
-app.listen(port, () => {
-  console.log(`Server is listening port ${port}`);
-});
+// Export app for tests
+export default app;
+
+// Start server only when not testing
+if (process.env.NODE_ENV !== "test") {
+  app.listen(port, () => {
+    console.log(`Server is listening port ${port}`);
+  });
+}
