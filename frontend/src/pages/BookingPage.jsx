@@ -1,52 +1,53 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../AuthContext.jsx";
+import "./BookingPage.css";
 
 export function BookingPage() {
   const { currentUser } = useAuth();
 
-// Mock dataa
-const mockScreenings = [
-  {
-    id: 17,
-    title: "John Wick: Chapter 4",
-    poster: "https://image.tmdb.org/t/p/w200/vZloFAK7NmvMGKE7VkF5UHaz0I.jpg",
-    date: "2025-12-17",
-    time: "18:00",
-    seatsTaken: [4, 7, 11, 20, 25, 31],
-  },
-  {
-    id: 4,
-    title: "Wonka",
-    poster: "https://image.tmdb.org/t/p/w200/qhb1qOilapbapxWQn9jtRCMwXJF.jpg",
-    date: "2025-12-18",
-    time: "20:00",
-    seatsTaken: [6, 7, 13, 14, 20, 31],
-  },
-  {
-    id: 5,
-    title: "Guardians of the Galaxy Vol. 3",
-    poster: "https://image.tmdb.org/t/p/w200/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg",
-    date: "2025-12-19",
-    time: "18:30",
-    seatsTaken: [4, 5, 18, 22, 23, 30],
-  },
-  {
-    id: 6,
-    title: "Barbie",
-    poster: "https://image.tmdb.org/t/p/w200/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg",
-    date: "2025-12-20",
-    time: "19:00",
-    seatsTaken: [1, 3, 10, 11, 17, 26],
-  },
-  {
-    id: 7,
-    title: "The Batman",
-    poster: "https://image.tmdb.org/t/p/w200/74xTEgt7R36Fpooo50r9T25onhq.jpg",
-    date: "2025-12-21",
-    time: "21:00",
-    seatsTaken: [2, 6, 15, 19, 24, 32],
-  }
-];
+  // Mock dataa
+  const mockScreenings = [
+    {
+      id: 17,
+      title: "John Wick: Chapter 4",
+      poster: "https://image.tmdb.org/t/p/w200/vZloFAK7NmvMGKE7VkF5UHaz0I.jpg",
+      date: "2025-12-17",
+      time: "18:00",
+      seatsTaken: [4, 7, 11, 20, 25, 31],
+    },
+    {
+      id: 4,
+      title: "Wonka",
+      poster: "https://image.tmdb.org/t/p/w200/qhb1qOilapbapxWQn9jtRCMwXJF.jpg",
+      date: "2025-12-18",
+      time: "20:00",
+      seatsTaken: [6, 7, 13, 14, 20, 31],
+    },
+    {
+      id: 5,
+      title: "Guardians of the Galaxy Vol. 3",
+      poster: "https://image.tmdb.org/t/p/w200/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg",
+      date: "2025-12-19",
+      time: "18:30",
+      seatsTaken: [4, 5, 18, 22, 23, 30],
+    },
+    {
+      id: 6,
+      title: "Barbie",
+      poster: "https://image.tmdb.org/t/p/w200/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg",
+      date: "2025-12-20",
+      time: "19:00",
+      seatsTaken: [1, 3, 10, 11, 17, 26],
+    },
+    {
+      id: 7,
+      title: "The Batman",
+      poster: "https://image.tmdb.org/t/p/w200/74xTEgt7R36Fpooo50r9T25onhq.jpg",
+      date: "2025-12-21",
+      time: "21:00",
+      seatsTaken: [2, 6, 15, 19, 24, 32],
+    }
+  ];
 
 
   const [screenings, setScreenings] = useState([]);
@@ -166,42 +167,37 @@ const mockScreenings = [
   }
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <h1>Varaa paikat</h1>
+    <div className="booking-page">
+      <header className="booking-header">
+        <h1>Varaa paikat</h1>
+        <p className="hint">Valitse näytös, katso salin kartta ja varaa paikat yhdellä napilla.</p>
+      </header>
 
-  
-      <section style={{ marginBottom: "40px" }}>
-        <h2>Näytökset</h2>
+      <section className="card booking-section">
+        <div className="section-header">
+          <div>
+            <p className="eyebrow">Näytökset</p>
+            <h2>Valitse elokuva</h2>
+          </div>
+        </div>
         {screenings.length === 0 ? (
-          <p>Ei näytöksiä tällä hetkellä.</p>
+          <p className="hint">Ei näytöksiä tällä hetkellä.</p>
         ) : (
-          <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+          <div className="screenings-grid">
             {screenings.map((s) => (
-              <div
+              <article
                 key={s.id}
                 onClick={() => setSelectedScreening(s)}
-                style={{
-                  cursor: "pointer",
-                  border:
-                    selectedScreening?.id === s.id
-                      ? "2px solid blue"
-                      : "1px solid #ccc",
-                  padding: "10px",
-                  borderRadius: "8px",
-                  textAlign: "center",
-                  width: "150px",
-                }}
+                className={`screening-card ${selectedScreening?.id === s.id ? "selected" : ""}`}
               >
-                <img
-                  src={s.poster}
-                  alt={s.title}
-                  style={{ width: "100%", borderRadius: "4px" }}
-                />
-                <p style={{ fontWeight: "bold" }}>{s.title}</p>
-                <p>
-                  {s.date} {s.time}
-                </p>
-              </div>
+                <img src={s.poster} alt={s.title} />
+                <div className="screening-copy">
+                  <h3>{s.title}</h3>
+                  <p className="screening-meta">
+                    {s.date} {s.time}
+                  </p>
+                </div>
+              </article>
             ))}
           </div>
         )}
@@ -209,51 +205,61 @@ const mockScreenings = [
 
 
       {selectedScreening && (
-        <section style={{ marginBottom: "40px" }}>
-          <h2>Valitse paikat</h2>
-          <div style={{ display: "flex", gap: "20px" }}>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: `repeat(${COLS}, 40px)`,
-                gap: "5px",
-              }}
-            >
-              {seatMap.map((seat, index) => {
-                let color;
-                if (seat === "taken") color = "red";
-                else if (selectedSeats.includes(index)) color = "blue";
-                else color = "green";
+        <section className="card booking-section">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Salikartta</p>
+              <h2>Valitse paikat</h2>
+              <p className="hint">
+                {selectedScreening.title} — {selectedScreening.date} {selectedScreening.time}
+              </p>
+            </div>
+          </div>
+          <div className="seat-layout">
+            <div className="seat-stage">
+              <div className="screen-label">Valkokangas</div>
+              <div className="seat-grid-shell">
+                <div className="seat-grid" style={{ gridTemplateColumns: `repeat(${COLS}, minmax(36px, 1fr))` }}>
+                  {seatMap.map((seat, index) => {
+                    const status =
+                      seat === "taken"
+                        ? "taken"
+                        : selectedSeats.includes(index)
+                          ? "selected"
+                          : "available";
 
-                return (
-                  <div
-                    key={index}
-                    onClick={() => toggleSeat(index)}
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      backgroundColor: color,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderRadius: "4px",
-                      cursor:
-                        seat === "taken" ? "not-allowed" : "pointer",
-                      color: "white",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {index + 1}
-                  </div>
-                );
-              })}
+                    return (
+                      <div
+                        key={index}
+                        onClick={() => toggleSeat(index)}
+                        className={`seat ${status}`}
+                        role="button"
+                        aria-pressed={selectedSeats.includes(index)}
+                        aria-label={`Paikka ${index + 1}${status === "taken" ? " (varattu)" : ""}`}
+                      >
+                        {index + 1}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="seat-legend">
+                <div className="legend-item">
+                  <span className="legend-swatch available" /> Vapaa
+                </div>
+                <div className="legend-item">
+                  <span className="legend-swatch selected" /> Valittu
+                </div>
+                <div className="legend-item">
+                  <span className="legend-swatch taken" /> Varattu
+                </div>
+              </div>
             </div>
 
-
-            <div style={{ minWidth: "200px" }}>
+            <div className="seat-summary">
               <h3>Valitut paikat</h3>
               {selectedSeats.length === 0 ? (
-                <p>Ei valittuja paikkoja.</p>
+                <p className="hint">Ei valittuja paikkoja.</p>
               ) : (
                 <ul>
                   {selectedSeats.map((s) => (
@@ -261,64 +267,33 @@ const mockScreenings = [
                   ))}
                 </ul>
               )}
-              <button
-                onClick={confirmBooking}
-                style={{
-                  marginTop: "10px",
-                  padding: "10px 20px",
-                  borderRadius: "5px",
-                  border: "none",
-                  backgroundColor: "darkblue",
-                  color: "white",
-                  cursor: "pointer",
-                }}
-              >
-                Varaa paikat
-              </button>
+              <button onClick={confirmBooking}>Varaa paikat</button>
             </div>
           </div>
         </section>
       )}
 
 
-      <section>
+      <section className="card booking-section">
         <h2>Omat varaukset</h2>
         {!currentUser ? (
           <p>Kirjaudu nähdäksesi omat varauksesi.</p>
         ) : bookings.length === 0 ? (
           <p>Sinulla ei ole varauksia.</p>
         ) : (
-          <div>
+          <div className="booking-list">
             {bookings.map((b, idx) => (
               <div
                 key={idx}
-                style={{
-                  border: "1px solid #ccc",
-                  padding: "10px",
-                  marginBottom: "10px",
-                  borderRadius: "6px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
+                className="booking-row"
               >
-                <div>
-                  <p style={{ fontWeight: "bold" }}>
+                <div className="booking-row__copy">
+                  <p>
                     {b.screening.title} - {b.screening.date} {b.screening.time}
                   </p>
                   <p>Paikat: {b.seats.join(", ")}</p>
                 </div>
-                <button
-                  onClick={() => cancelBooking(idx)}
-                  style={{
-                    padding: "5px 10px",
-                    borderRadius: "5px",
-                    border: "none",
-                    backgroundColor: "red",
-                    color: "white",
-                    cursor: "pointer",
-                  }}
-                >
+                <button onClick={() => cancelBooking(idx)}>
                   Peru varaus
                 </button>
               </div>
