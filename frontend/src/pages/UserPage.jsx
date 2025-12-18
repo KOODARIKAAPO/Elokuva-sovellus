@@ -664,7 +664,6 @@ async function handleLeaveGroup(groupId) {
         >
           <span
             onClick={() => navigate(`/groups/${group.id}`)}
-            style={{ cursor: "pointer", fontWeight: "bold" }}
           >
             {group.name}
           </span>
@@ -673,7 +672,6 @@ async function handleLeaveGroup(groupId) {
             type="button"
             onClick={() => handleDeleteGroup(group.id)}
             className="danger-btn"
-            style={{ marginLeft: "1rem" }}
           >
             Poista
           </button>

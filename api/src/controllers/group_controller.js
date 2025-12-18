@@ -63,43 +63,67 @@ export async function deleteGroup(req, res, next) {
 
 // Hae käyttäjän liittymät ryhmät
 export async function getJoinedGroups(req, res, next) {
-   console.log("req.user:", req.user);
-   const userId = req.user?.id;
-   if (!userId) return res.status(400).json({ error: "No user ID" });
+  const userId = req.user?.id;
+  if (!userId) return res.status(400).json({ error: "No user ID" });
 
   try {
     const { rows } = await pool.query(`
-      SELECT g.*
+      SELECT g.id, g.name, gm.status
       FROM groups g
       JOIN group_member gm ON g.id = gm.group_id
-      WHERE gm.user_id = $1 AND gm.status = 'approved'
+      WHERE gm.user_id = $1
     `, [userId]);
 
-    return res.json(rows);
+    return res.json(rows); 
   } catch (err) {
     return next(err);
   }
 }
 
+
+// Hae ryhmä ID:llä
 export async function getGroupById(req, res, next) {
   try {
-    const id = Number(req.params.id);
-    if (!id) {
+    const groupId = Number(req.params.id);
+    const userId = req.user?.id; 
+
+    if (!groupId) {
       return res.status(400).json({ error: "Invalid group ID" });
     }
 
-    const { rows } = await pool.query(
+    // Hae ryhmä
+    const groupRes = await pool.query(
       "SELECT * FROM groups WHERE id = $1",
-      [id]
+      [groupId]
     );
 
-    if (rows.length === 0) {
+    if (groupRes.rows.length === 0) {
       return res.status(404).json({ error: "Group not found" });
     }
 
-    return res.json(rows[0]);
+    const group = groupRes.rows[0];
+
+    if (!userId) {
+      return res.status(403).json({ error: "You must be a group member" });
+    }
+
+    if (group.owner_id === userId) {
+      return res.json(group);
+    }
+
+    const memberRes = await pool.query(
+      "SELECT * FROM group_member WHERE group_id = $1 AND user_id = $2 AND status = 'approved'",
+      [groupId, userId]
+    );
+
+    if (memberRes.rows.length === 0) {
+      return res.status(403).json({ error: "You must be a group member" });
+    }
+
+    return res.json(group);
+
   } catch (err) {
-    return next(err);
+    next(err);
   }
 }
 
@@ -229,13 +253,40 @@ export async function listGroupMembers(req, res, next) {
   try {
     const groupId = Number(req.params.id);
 
-    const { rows } = await pool.query(
-      "SELECT * FROM group_member WHERE group_id = $1",
-      [groupId]
-    );
+    const { rows } = await pool.query(`
+      SELECT 
+        gm.user_id,
+        gm.status,
+        gm.role,
+        a.username
+      FROM group_member gm
+      JOIN account a ON a.id = gm.user_id
+      WHERE gm.group_id = $1
+      ORDER BY gm.user_id ASC
+    `, [groupId]);
+
+    const ownerRes = await pool.query(`
+      SELECT id AS user_id, username 
+      FROM account 
+      WHERE id = (SELECT owner_id FROM groups WHERE id = $1)
+    `, [groupId]);
+
+    if (ownerRes.rows.length > 0) {
+      const owner = ownerRes.rows[0];
+
+      if (!rows.some(m => m.user_id === owner.user_id)) {
+        rows.push({
+          user_id: owner.user_id,
+          username: owner.username,
+          status: "owner",
+          role: "owner"
+        });
+      }
+    }
 
     return res.json(rows);
   } catch (err) {
+    console.error("listGroupMembers ERROR:", err);
     next(err);
   }
 }
@@ -281,6 +332,38 @@ export async function approveMember(req, res) {
   return res.json({ success: true });
 }
 
+// Hylkää jäsenyyspyyntö
+export async function rejectMember(req, res) {
+  const groupId = Number(req.params.id);
+  const userId = Number(req.params.userId);
+
+  try {
+    const group = await pool.query("SELECT owner_id FROM groups WHERE id = $1", [groupId]);
+
+    if (group.rows.length === 0) {
+      return res.status(404).json({ error: "Group not found" });
+    }
+
+    if (group.rows[0].owner_id !== req.user.id) {
+      return res.status(403).json({ error: "Not allowed" });
+    }
+
+    const result = await pool.query(
+      "DELETE FROM group_member WHERE group_id = $1 AND user_id = $2 AND status = 'pending' RETURNING *",
+      [groupId, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Server error" });
+  }
+}
+
 // Poistu ryhmästä
 export async function leaveGroup(req, res, next) {
   try {
@@ -300,7 +383,6 @@ export async function leaveGroup(req, res, next) {
       return res.status(404).json({ error: "Group not found" });
     }
 
-    // Omistaja ei voi poistua – hänen pitää poistaa ryhmä
     if (groupRes.rows[0].owner_id === userId) {
       return res.status(403).json({ error: "Owner cannot leave their own group" });
     }
@@ -320,6 +402,40 @@ export async function leaveGroup(req, res, next) {
   }
 }
 
+// Poista ryhmän jäsen
+export async function removeMember(req, res, next) {
+  try {
+    const groupId = Number(req.params.id);
+    const userId = Number(req.params.userId);
+    const currentUserId = req.user.id;
+
+    const groupRes = await pool.query("SELECT owner_id FROM groups WHERE id = $1", [groupId]);
+    if (groupRes.rows.length === 0) return res.status(404).json({ error: "Group not found" });
+
+    const group = groupRes.rows[0];
+
+    if (group.owner_id !== currentUserId) {
+      return res.status(403).json({ error: "Only the owner can remove members" });
+    }
+
+    if (userId === group.owner_id) {
+      return res.status(400).json({ error: "Owner cannot be removed" });
+    }
+
+    const result = await pool.query(
+      "DELETE FROM group_member WHERE group_id = $1 AND user_id = $2 RETURNING *",
+      [groupId, userId]
+    );
+
+    if (result.rows.length === 0) return res.status(404).json({ error: "Member not found" });
+
+    return res.json({ success: true, message: "Member removed" });
+  } catch (err) {
+    console.error("removeMember ERROR:", err);
+    next(err);
+  }
+}
+
 
 
 export default {
@@ -333,6 +449,8 @@ export default {
   listGroupMembers,
   requestJoin,
   approveMember,
+  rejectMember,
   getJoinedGroups,
   leaveGroup,
+  removeMember,
 };

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../AuthContext.jsx";
-import "../app.css";
+import "../App.css";
 
 export default function MovieDetails({
   movie,

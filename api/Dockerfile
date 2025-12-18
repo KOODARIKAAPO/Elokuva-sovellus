@@ -2,12 +2,17 @@ FROM node:20
 
 WORKDIR /usr/src/app
 
-# Kopioi package.json ja + package-lock.json ensin (nopeampi cache npm installille)
+# Kopioi package.json ja package-lock.json
 COPY package*.json ./
 
-RUN npm install -g nodemon && npm install
+# Asenna riippuvuudet
+RUN npm install --production
 
-# Kopioidaan sovelluksen lähdekoodi
+# Kopioidaan lähdekoodi (ml. src-kansio)
 COPY . .
+
+# Kerrotaan mille portille applikaatio kuuntelee
+ENV PORT=3001
+EXPOSE 3001
 
 CMD ["npm", "start"]

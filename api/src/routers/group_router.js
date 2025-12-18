@@ -11,8 +11,10 @@ import {
   listGroupMembers,
   requestJoin,
   approveMember,
+  rejectMember,
   getJoinedGroups,
   leaveGroup,
+  removeMember,
 } from "../controllers/group_controller.js";
 import {
   getGroupMessages,
@@ -33,6 +35,8 @@ router.post("/", authRequired, createGroup);
 // Ryhmän jäsenyys
 router.post("/:id/join", authRequired, requestJoin);
 router.post("/:id/approve/:userId", authRequired, approveMember);
+router.post("/:id/reject/:userId", authRequired, rejectMember);
+
 
 // Ryhmän suosikit
 router.get("/:id/favourites", getGroupFavourites);
@@ -48,7 +52,10 @@ router.delete("/:id", authRequired, deleteGroup);
 // Poistu ryhmästä
 router.delete("/:id/leave", authRequired, leaveGroup);
 
-router.get("/:id", getGroupById);
+// Poista jäsen ryhmästä
+router.delete("/:id/members/:userId", authRequired, removeMember);
+
+router.get("/:id", authRequired, getGroupById);
 
 // Hae viestit
 router.get("/:id/messages", authRequired, getGroupMessages);
